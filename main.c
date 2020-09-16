@@ -35,7 +35,8 @@ void initPwm(void) {
     SIM_SOPT2 |= SIM_SOPT2_TPMSRC(1);
     
     // Set MOD to adjust 50Hz frequency
-    // TPM1_MOD = 7500;
+    TPM1_MOD = 7500;
+    TPM2_MOD = 7500;
     
     // Set CMOD to 01 and prescaler to 128 for timer 1 and 2
     TPM1_SC &= ~(TPM_SC_CMOD_MASK | TPM_SC_PS_MASK);
@@ -74,6 +75,11 @@ static void delay(volatile uint32_t nof) {
 int main(void) {
     SystemCoreClockUpdate();
     initPwm();
+    
+    TPM1_C0V = 3750;
+    TPM1_C1V = 3750;
+    TPM2_C0V = 3750;
+    TPM2_C1V = 3750;
     
     while (1) {
 

@@ -1,0 +1,6 @@
+Listings/
+Objects/
+*.uvoptx
+*.uvprojx
+*.uvguix*
+*.scvd
