@@ -1,7 +1,3 @@
-Listings/
-Objects/
-RTE/
-*.uvoptx
-*.uvprojx
 *.uvguix*
-*.scvd
+Objects/
+Listings/
