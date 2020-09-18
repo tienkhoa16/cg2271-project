@@ -76,8 +76,8 @@ int main(void) {
     SystemCoreClockUpdate();
     initPwm();
     
-    TPM1_C0V = 3750;
-    TPM1_C1V = 3750;
+    TPM1_C0V = 3750;    // going forward
+    TPM1_C1V = 0;       // going backward
     TPM2_C0V = 3750;
     TPM2_C1V = 3750;
     
