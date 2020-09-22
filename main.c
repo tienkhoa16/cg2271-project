@@ -1,10 +1,16 @@
+/**
+ * MOTOR PWM CONNECTION
+ * PTB0, PTB1 A1 A2 Green
+ * PTB2, PTB3 A1 A2 Blue
+ */
+
 #include "MKL25Z4.h"                    // Device header
 
 
-#define PTB0_PIN 0                      // Port B pin 0, TPM1_CH0
-#define PTB1_PIN 1                      // Port B pin 1, TPM1_CH1
-#define PTB2_PIN 2                      // Port B pin 2, TPM2_CH0
-#define PTB3_PIN 3                      // Port B pin 3, TPM2_CH1
+#define PTB0_PIN 0                      // Port B pin 0, TPM1_CH0,  
+#define PTB1_PIN 1                      // Port B pin 1, TPM1_CH1,
+#define PTB2_PIN 2                      // Port B pin 2, TPM2_CH0,
+#define PTB3_PIN 3                      // Port B pin 3, TPM2_CH1,
 
 /* init PWM */
 void initPwm(void) {
@@ -77,8 +83,8 @@ int main(void) {
     initPwm();
     
     TPM1_C0V = 3750;    // going forward
-    TPM1_C1V = 0;       // going backward
-    TPM2_C0V = 3750;
+    TPM1_C1V = 0;       
+    TPM2_C0V = 0;	// going backward
     TPM2_C1V = 3750;
     
     while (1) {
