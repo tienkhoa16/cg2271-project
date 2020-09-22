@@ -1,10 +1,26 @@
+/**
+ * MOTOR PWM CONNECTION
+ * F = Front motor driver, B = Back motor driver
+ * L = Left motor, R = Right motor
+ * PTB0 and PTB1 is connected to the left motors
+ * PTB0 is connected to F-A1 and F-B1 (IN)
+ * PTB1 is connected to F-A2 and F-B2 (IN)
+ * F-B1_out and F-B2_out to front-left 
+ * F-A1_out and F-A2_out to back-left 
+ * PTB2 and PTB3 is connected to the right motors
+ * PTB2 is connected to B-A1 and B-B1 (IN)
+ * PTB3 is connected to B-A2 and B-B2 (IN)
+ * B-A1_out and B-A2_out to back-right 
+ * B-B1_out and B-B2_out to right-right 
+ */
+
 #include "MKL25Z4.h"                    // Device header
 
 
-#define PTB0_PIN 0                      // Port B pin 0, TPM1_CH0
-#define PTB1_PIN 1                      // Port B pin 1, TPM1_CH1
-#define PTB2_PIN 2                      // Port B pin 2, TPM2_CH0
-#define PTB3_PIN 3                      // Port B pin 3, TPM2_CH1
+#define PTB0_PIN 0                      // Port B pin 0, TPM1_CH0,  
+#define PTB1_PIN 1                      // Port B pin 1, TPM1_CH1,
+#define PTB2_PIN 2                      // Port B pin 2, TPM2_CH0,
+#define PTB3_PIN 3                      // Port B pin 3, TPM2_CH1,
 
 /* init PWM */
 void initPwm(void) {
@@ -79,7 +95,7 @@ int main(void) {
     TPM1_C0V = 3750;    // going forward
     TPM1_C1V = 0;       // going backward
     TPM2_C0V = 3750;
-    TPM2_C1V = 3750;
+    TPM2_C1V = 0;
     
     while (1) {
 
