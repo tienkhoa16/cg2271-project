@@ -13,13 +13,13 @@ int opening_notes[] = {
 };
 
 int opening_duration[] = {
-	250, 5, 125, 125, 125, 125, 125, 300, 25, 250, 75,
-	250, 5, 100, 175, 100, 175, 150, 300, 25, 250, 75,
-	250, 5, 125, 125, 125, 125, 125, 300, 25, 250, 75,
+	250, 5, 100, 100, 100, 100, 125, 300, 5, 250, 75,
+	250, 5, 75, 150, 50, 150, 75, 300, 5, 250, 75,
+	250, 5, 100, 100, 100, 100, 125, 300, 5, 250, 50,
 	125, 125, 175, 50, 175, 50, 150, 10, 150, 25, 150, 75, 150, 75, 150, 150
 };
 
-int running_notes[] = {       //Note of the song, 0 is a rest/pulse
+int running_notes[] = {
    E4, G4, A4, A4, 0, 
    A4, B4, C5, C5, 0, 
    C5, D5, B4, B4, 0,
@@ -72,8 +72,6 @@ int running_notes[] = {       //Note of the song, 0 is a rest/pulse
    D5, 0, 0, C5, 0, 0,
    B4, C5, 0, B4, 0, A4
 };
-
-//duration of each note (in ms) Quarter Note is set to 250 ms
 int running_duration[] = {         
   125, 125, 250, 125, 125, 
   125, 125, 250, 125, 125,
@@ -127,8 +125,6 @@ int running_duration[] = {
   250, 125, 375, 250, 125, 375,
   125, 125, 125, 125, 125, 500
 };
-
-
 
 /* Init PWM Module */
 void initSound(void) 
