@@ -1,8 +1,23 @@
 #include "MKL25Z4.h"
 #include "sound.h"
 
-#define MUSICAL_CNT sizeof(running_notes)/sizeof(running_notes[0])
+#define RUNNING_CNT sizeof(running_notes)/sizeof(running_notes[0])
+#define OPENING_CNT sizeof(opening_notes)/sizeof(opening_notes[0])
 #define FREQ_2_MOD(x) (375000/x)
+
+int opening_notes[] = {
+	A3, 0, G3, FS3, A3, D4, E4, FS4, 0, D4, 0,
+	B3, 0, C4, D4, C4, D4, C4, A3, 0, FS3, 0,
+	A3, 0, G3, FS3, A3, D4, E4, FS4, 0, D4, 0,
+	D4, D4, E4, 0, E4, 0, D4, 0, CS4, 0, D4, 0, D4, 0, D4, 0
+};
+
+int opening_duration[] = {
+	250, 5, 125, 125, 125, 125, 125, 300, 25, 250, 75,
+	250, 5, 100, 175, 100, 175, 150, 300, 25, 250, 75,
+	250, 5, 125, 125, 125, 125, 125, 300, 25, 250, 75,
+	125, 125, 175, 50, 175, 50, 150, 10, 150, 25, 150, 75, 150, 75, 150, 150
+};
 
 int running_notes[] = {       //Note of the song, 0 is a rest/pulse
    E4, G4, A4, A4, 0, 
@@ -114,6 +129,7 @@ int running_duration[] = {
 };
 
 
+
 /* Init PWM Module */
 void initSound(void) 
 {
@@ -168,11 +184,17 @@ void running_sound(void) {
 	
 	while(1)
 	{
-		for (int i = 0; i < MUSICAL_CNT; i++)
+//		for (int i = 0; i < RUNNING_CNT; i++)
+//		{
+//			TPM0->MOD = FREQ_2_MOD(running_notes[i]);
+//			TPM0_C2V = (FREQ_2_MOD(running_notes[i])) / 2;
+//			delay(running_duration[i]*6000);
+//		}
+		for (int i = 0; i < OPENING_CNT; i++)
 		{
-			TPM0->MOD = FREQ_2_MOD(running_notes[i]);
-			TPM0_C2V = (FREQ_2_MOD(running_notes[i])) / 2;
-			delay(running_duration[i]*6000);
+			TPM0->MOD = FREQ_2_MOD(opening_notes[i]);
+			TPM0_C2V = (FREQ_2_MOD(opening_notes[i])) / 2;
+			delay(opening_duration[i]*12000);
 		}
 	}
 }
