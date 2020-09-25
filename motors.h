@@ -1,33 +1,26 @@
 #ifndef MOTORS_H_
 #define MOTORS_H_
 
-// Motor Pins
-#define RIGHT_MOTOR_FORWARD	 	0		// PTD0 TPM0 CH0
-#define RIGHT_MOTOR_REVERSE		2		//PTD2 TPM0 CH2
-#define LEFT_MOTOR_FORWARD		3 	// PTD3 TPM0 CH3
-#define LEFT_MOTOR_REVERSE		5		// PTD5 TPM0 CH5
+// MOTOR PINS OUT 
+#define RIGHT_MOTOR_FORWARD 0                      // Port B pin 0, TPM1_CH0,  
+#define RIGHT_MOTOR_REVERSE 1                      // Port B pin 1, TPM1_CH1,
+#define LEFT_MOTOR_FORWARD  2                      // Port B pin 2, TPM2_CH0,
+#define LEFT_MOTOR_REVERSE  3                      // Port B pin 3, TPM2_CH1
 
 // PWM SETTINGS
-#define FAST 100		// Used when going forward
-#define SLOW 75			// Used when making turns
+#define FAST 75		// Used when going forward and backward
+#define SLOW 25		// Used when making turns
 
-// can maybe change to enum
 // DIRECTION SETTINGS
 #define STOP			0
-#define FORWARD 		3
-#define REVERSE 		5
-#define LEFT			9
-#define RIGHT			17
-#define F_LEFT			11
-#define F_RIGHT			19
-#define	R_LEFT			13
-#define	R_RIGHT			21
-
-#define MASK_ON(x)	(x & 0x1)
+#define FORWARD 		1
+#define REVERSE 		2
+#define LEFT			3
+#define RIGHT			4
 
 void initMotors(void);
 
-int PWM(int);
+int getPWM(int);
 
 void move(int);
 
