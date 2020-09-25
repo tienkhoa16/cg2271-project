@@ -180,17 +180,23 @@ void running_sound(void) {
 	
 	while(1)
 	{
-//		for (int i = 0; i < RUNNING_CNT; i++)
-//		{
-//			TPM0->MOD = FREQ_2_MOD(running_notes[i]);
-//			TPM0_C2V = (FREQ_2_MOD(running_notes[i])) / 2;
-//			delay(running_duration[i]*6000);
-//		}
-		for (int i = 0; i < OPENING_CNT; i++)
+		for (int i = 0; i < RUNNING_CNT; i++)
 		{
-			TPM0->MOD = FREQ_2_MOD(opening_notes[i]);
-			TPM0_C2V = (FREQ_2_MOD(opening_notes[i])) / 2;
-			delay(opening_duration[i]*12000);
+			TPM0->MOD = FREQ_2_MOD(running_notes[i]);
+			TPM0_C2V = (FREQ_2_MOD(running_notes[i])) / 2;
+			delay(running_duration[i]*6000);
 		}
+	}
+}
+
+void opening_sound(void) {
+	
+	TPM0_C2V = 0xEA6; //  0x0EA6 = 3750 = 7500 / 2 -> 50% duty cycle
+	
+	for (int i = 0; i < OPENING_CNT; i++)
+	{
+		TPM0->MOD = FREQ_2_MOD(opening_notes[i]);
+		TPM0_C2V = (FREQ_2_MOD(opening_notes[i])) / 2;
+		delay(opening_duration[i]*11000);
 	}
 }

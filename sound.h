@@ -100,6 +100,8 @@
 
 void initSound(void);
 
+void opening_sound(void);
+
 void running_sound(void);
 
 #endif
