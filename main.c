@@ -8,6 +8,6 @@ int main(void)
 	initSound();
 	
 	while(1) {
-		opening_sound();
+		ending_sound();
 	}
 }
