@@ -129,7 +129,7 @@ int running_duration[] = {
 };
 
 int ending_notes[] = {
-		C4, E4, G4, E4, 
+	C4, E4, G4, E4, 
     C4, E4, G4, E4,
     A3, C4, E4, C4,
     A3, C4, E4, C4,
