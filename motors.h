@@ -8,8 +8,8 @@
 #define LEFT_MOTOR_REVERSE  3                      // Port B pin 3, TPM2_CH1
 
 // PWM SETTINGS
-#define FAST 75		// Used when going forward and backward
-#define SLOW 25		// Used when making turns
+#define FAST 90		// Used when going forward and backward
+#define SLOW 40		// Used when making turns
 
 // DIRECTION SETTINGS
 #define STOP			0
