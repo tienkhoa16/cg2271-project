@@ -6,20 +6,22 @@
 #define ENDING_CNT sizeof(ending_notes)/sizeof(ending_notes[0])
 #define FREQ_2_MOD(x) (375000/x)
 
-int opening_notes[] = {
+// Glory glory ManUtd
+int ending_notes[] = {
 	A3, 0, G3, FS3, A3, D4, E4, FS4, 0, D4, 0,
 	B3, 0, C4, D4, C4, D4, C4, A3, 0, FS3, 0,
 	A3, 0, G3, FS3, A3, D4, E4, FS4, 0, D4, 0,
 	D4, D4, E4, 0, E4, 0, D4, 0, CS4, 0, D4, 0, D4, 0, D4, 0
 };
 
-int opening_duration[] = {
+int ending_durations[] = {
 	250, 5, 100, 100, 100, 100, 125, 300, 5, 250, 75,
 	250, 5, 75, 150, 50, 150, 75, 300, 5, 250, 75,
 	250, 5, 100, 100, 100, 100, 125, 300, 5, 250, 50,
 	125, 125, 175, 50, 175, 50, 150, 10, 150, 25, 150, 75, 150, 75, 150, 150
 };
 
+// Pirates of the Carribean
 int running_notes[] = {
 	E4, G4, A4, A4, 0, 
 	A4, B4, C5, C5, 0, 
@@ -74,7 +76,7 @@ int running_notes[] = {
 	B4, C5, 0, B4, 0, A4
 };
 
-int running_duration[] = {         
+int running_durations[] = {         
 	125, 125, 250, 125, 125, 
 	125, 125, 250, 125, 125,
 	125, 125, 250, 125, 125,
@@ -128,41 +130,17 @@ int running_duration[] = {
 	125, 125, 125, 125, 125, 500
 };
 
-int ending_notes[] = {
-	C4, E4, G4, E4, 
-    C4, E4, G4, E4,
-    A3, C4, E4, C4,
-    A3, C4, E4, C4,
-    G3, B3, D4, B3,
-    G3, B3, D4, B3,
-
-    G3, G3, G3, G3, G3, 
-    G3, G3, G3, G3,
-    C4, E4, G4, E4, 
-    C4, E4, G4, E4,
-    A3, C4, E4, C4,
-    A3, C4, E4, C4,
-    G3, B3, D4, B3,
-    G3, B3, D4, B3,
+// NOKIA RINGTONE
+int opening_notes[] = {
+	E5, D5, FS4, GS4, 0,
+	CS5, B4, D4, E4, 0,
+	B4, A4, CS4, E4, A4, 0
 };
 
-int ending_duration[] = {
-	125,125,125,125,
-	125,250,125,125,
-	125,125,125,125,
-	125,250,125,125,
-	125,125,125,125,
-	125,125,125,125,
-	125,250,125,125,
-
-	125,250,125,250,125,
-	125,125,250,125,
-	125,125,125,125,
-	125,250,125,125,
-	125,125,125,125,
-	125,250,125,125,
-	125,125,125,125,
-	125,250,125,125,
+int opening_durations[] = {
+	125, 125, 125, 150, 10,
+	125, 125, 125, 125, 10,
+	125, 125, 125, 125, 200, 150
 };
 
 /* Init PWM Module */
@@ -223,12 +201,12 @@ void running_sound(void) {
 		{
 			TPM0->MOD = FREQ_2_MOD(running_notes[i]);
 			TPM0_C2V = (FREQ_2_MOD(running_notes[i])) / 2;
-			delay(running_duration[i]*6000);
+			delay(running_durations[i]*6000);
 		}
 	}
 }
 
-void opening_sound(void) {
+void ending_sound(void) {
 	
 	TPM0_C2V = 0xEA6; //  0x0EA6 = 3750 = 7500 / 2 -> 50% duty cycle
 	
@@ -236,18 +214,18 @@ void opening_sound(void) {
 	{
 		TPM0->MOD = FREQ_2_MOD(opening_notes[i]);
 		TPM0_C2V = (FREQ_2_MOD(opening_notes[i])) / 2;
-		delay(opening_duration[i]*11000);
+		delay(ending_durations[i]*11000);
 	}
 }
 
-void ending_sound(void) {
+void opening_sound(void) {
 	
 	TPM0_C2V = 0XEA6; //0x0EA6 = 3750 = 7500 / 2 -> 50% duty cycle
 
-	for (int i = 0; i < OPENING_CNT; i++)
+	for (int i = 0; i < ENDING_CNT; i++)
 	{
-		TPM0->MOD = FREQ_2_MOD(opening_notes[i]);
-		TPM0_C2V = (FREQ_2_MOD(opening_notes[i])) / 2;
-		delay(ending_duration[i]*6000);
+		TPM0->MOD = FREQ_2_MOD(ending_notes[i]);
+		TPM0_C2V = (FREQ_2_MOD(ending_notes[i])) / 2;
+		delay(opening_durations[i]*10000);
 	}
 }

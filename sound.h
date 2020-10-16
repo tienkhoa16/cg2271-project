@@ -104,4 +104,6 @@ void opening_sound(void);
 
 void running_sound(void);
 
+void ending_sound(void);
+
 #endif
