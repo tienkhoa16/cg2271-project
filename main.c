@@ -28,7 +28,37 @@ void UART2_IRQHandler(void) {
 /*----------------------------------------------------------------------------
  * Application main thread
  *---------------------------------------------------------------------------*/
-void tLed(void *argument) {
+void red_led_thread(void *argument) {
+    int isRunning = -1;
+    
+    for (;;) {
+        if (BUTTON_RELEASED_MASK(rx_data) == BUTTON_RELEASED) {
+            isRunning = 0;
+        }
+
+        if (UP_BUTTON_PRESSED_MASK(rx_data) == UP_BUTTON_PRESSED || 
+                    LEFT_BUTTON_PRESSED_MASK(rx_data) == LEFT_BUTTON_PRESSED || 
+                    RIGHT_BUTTON_PRESSED_MASK(rx_data) == RIGHT_BUTTON_PRESSED || 
+                    DOWN_BUTTON_PRESSED_MASK(rx_data) == DOWN_BUTTON_PRESSED) {
+            isRunning = 1;
+        }
+                    
+        if (isRunning == 0) {
+            ledControl(RED_LEDS, LED_ON);
+            osDelay(250);
+            ledControl(RED_LEDS, LED_OFF);
+            osDelay(250);
+        } 
+        if (isRunning == 1) {
+            ledControl(RED_LEDS, LED_ON);
+            osDelay(500);
+            ledControl(RED_LEDS, LED_OFF);
+            osDelay(500);
+        }
+    }
+}
+
+void green_led_thread(void *argument) {
     int isRunning = -1;
     
     for (;;) {
@@ -40,7 +70,7 @@ void tLed(void *argument) {
                 osDelay(500);
             }
             rx_data = 0;
-        } 
+        }
 
         if (BUTTON_RELEASED_MASK(rx_data) == BUTTON_RELEASED) {
             isRunning = 0;
@@ -55,15 +85,10 @@ void tLed(void *argument) {
                     
         if (isRunning == 0) {
             onAllGreenLeds();
-            ledControl(RED_LEDS, LED_ON);
-            osDelay(250);
-            ledControl(RED_LEDS, LED_OFF);
         } else if (isRunning == 1) {
             ledControl(GREEN_LEDS_STRIP[led_count], LED_ON);
-            ledControl(RED_LEDS, LED_ON);
-            osDelay(500);
+            osDelay(50);
             offAllGreenLeds();
-            ledControl(RED_LEDS, LED_OFF);
 
             led_count = ((led_count == 7) ? 0 : led_count + 1);
         }
@@ -79,7 +104,8 @@ int main (void) {
     offAllLeds();
  
     osKernelInitialize();                 // Initialize CMSIS-RTOS
-    osThreadNew(tLed, NULL, NULL);    // Create application main thread
+    osThreadNew(green_led_thread, NULL, NULL);    // Create application main thread
+    osThreadNew(red_led_thread, NULL, NULL);    // Create application main thread
     osKernelStart();                      // Start thread execution
     for (;;) {}
 }
