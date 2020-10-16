@@ -65,9 +65,9 @@ void green_led_thread(void *argument) {
         if (BLUETOOTH_CONNECTED_MASK(rx_data) == BLUETOOTH_CONNECTED) {
             for (int i = 0; i < 3; i++) {
                 on2GreenLeds();
-                osDelay(500);
+                osDelay(250);
                 offAllLeds();
-                osDelay(500);
+                osDelay(250);
             }
             rx_data = 0;
         }
