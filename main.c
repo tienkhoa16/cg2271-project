@@ -19,6 +19,7 @@ void UART2_IRQHandler(void) {
     
     uint8_t rx_data = UART2_D;
 
+	// UART RX received all the bits
     if (UART2->S1 & UART_S1_RDRF_MASK) {
         if (BLUETOOTH_CONNECTED_MASK(rx_data) == BLUETOOTH_CONNECTED) {
             for (int i = 0; i < 3; i++) {
