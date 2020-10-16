@@ -29,6 +29,8 @@ void UART2_IRQHandler(void) {
  * Application main thread
  *---------------------------------------------------------------------------*/
 void tLed(void *argument) {
+    int isRunning = -1;
+    
     for (;;) {
         if (BLUETOOTH_CONNECTED_MASK(rx_data) == BLUETOOTH_CONNECTED) {
             for (int i = 0; i < 3; i++) {
@@ -41,17 +43,27 @@ void tLed(void *argument) {
         } 
 
         if (BUTTON_RELEASED_MASK(rx_data) == BUTTON_RELEASED) {
-            onAllGreenLeds();
+            isRunning = 0;
         }
 
         if (UP_BUTTON_PRESSED_MASK(rx_data) == UP_BUTTON_PRESSED || 
                     LEFT_BUTTON_PRESSED_MASK(rx_data) == LEFT_BUTTON_PRESSED || 
                     RIGHT_BUTTON_PRESSED_MASK(rx_data) == RIGHT_BUTTON_PRESSED || 
                     DOWN_BUTTON_PRESSED_MASK(rx_data) == DOWN_BUTTON_PRESSED) {
-
+            isRunning = 1;
+        }
+                    
+        if (isRunning == 0) {
+            onAllGreenLeds();
+            ledControl(RED_LEDS, LED_ON);
+            osDelay(250);
+            ledControl(RED_LEDS, LED_OFF);
+        } else if (isRunning == 1) {
             ledControl(GREEN_LEDS_STRIP[led_count], LED_ON);
-            osDelay(50);
+            ledControl(RED_LEDS, LED_ON);
+            osDelay(500);
             offAllGreenLeds();
+            ledControl(RED_LEDS, LED_OFF);
 
             led_count = ((led_count == 7) ? 0 : led_count + 1);
         }
