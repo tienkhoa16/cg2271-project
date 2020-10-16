@@ -1,92 +1,63 @@
-/**
- * MOTOR PWM CONNECTION
- * PTB0, PTB1 A1 A2 Green
- * PTB2, PTB3 A1 A2 Blue
- */
-
 #include "MKL25Z4.h"                    // Device header
+#include "uart.h"
+#include "ledControl.h"
 
+volatile uint8_t led_count = 0;
+uint32_t GREEN_LEDS_STRIP[8] = {GREEN_LED_1, GREEN_LED_2, GREEN_LED_3, GREEN_LED_4, 
+        GREEN_LED_5, GREEN_LED_6, GREEN_LED_7, GREEN_LED_8};
 
-#define PTB0_PIN 0                      // Port B pin 0, TPM1_CH0,  
-#define PTB1_PIN 1                      // Port B pin 1, TPM1_CH1,
-#define PTB2_PIN 2                      // Port B pin 2, TPM2_CH0,
-#define PTB3_PIN 3                      // Port B pin 3, TPM2_CH1,
-
-/* init PWM */
-void initPwm(void) {
-    // Enable clock gating port B
-    SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;
-    
-    // Enable timer module 1 channel 0
-    PORTB->PCR[PTB0_PIN] &= ~PORT_PCR_MUX_MASK;
-    PORTB->PCR[PTB0_PIN] |= PORT_PCR_MUX(3);
-    
-    // Enable timer module 1 channel 1
-    PORTB->PCR[PTB1_PIN] &= ~PORT_PCR_MUX_MASK;
-    PORTB->PCR[PTB1_PIN] |= PORT_PCR_MUX(3);
-
-    // Enable timer module 2 channel 0
-    PORTB->PCR[PTB2_PIN] &= ~PORT_PCR_MUX_MASK;
-    PORTB->PCR[PTB2_PIN] |= PORT_PCR_MUX(3);
-    
-    // Enable timer module 2 channel 1
-    PORTB->PCR[PTB3_PIN] &= ~PORT_PCR_MUX_MASK;
-    PORTB->PCR[PTB3_PIN] |= PORT_PCR_MUX(3);
-    
-    // Enable clock for timer module 1 and timer module 2
-    SIM_SCGC6 |= (SIM_SCGC6_TPM1_MASK | SIM_SCGC6_TPM2_MASK);
-    
-    // Choose source clock
-    SIM_SOPT2 &= ~SIM_SOPT2_TPMSRC_MASK;
-    SIM_SOPT2 |= SIM_SOPT2_TPMSRC(1);
-    
-    // Set MOD to adjust 50Hz frequency
-    TPM1_MOD = 7500;
-    TPM2_MOD = 7500;
-    
-    // Set CMOD to 01 and prescaler to 128 for timer 1 and 2
-    TPM1_SC &= ~(TPM_SC_CMOD_MASK | TPM_SC_PS_MASK);
-    TPM1_SC |= (TPM_SC_CMOD(1) | TPM_SC_PS(7));
-    TPM2_SC &= ~(TPM_SC_CMOD_MASK | TPM_SC_PS_MASK);
-    TPM2_SC |= (TPM_SC_CMOD(1) | TPM_SC_PS(7));
-    
-    // Enable up counting for timer 1 and 2
-    TPM1_SC &= ~TPM_SC_CPWMS_MASK;
-    TPM2_SC &= ~TPM_SC_CPWMS_MASK;
-    
-    // Set Edge-aligned PWM, clear Output on match for timer 1 channel 0
-    TPM1_C0SC &= (TPM_CnSC_ELSB_MASK | TPM_CnSC_ELSA_MASK | TPM_CnSC_MSB_MASK | TPM_CnSC_MSA_MASK);
-    TPM1_C0SC |= (TPM_CnSC_MSB(1) | TPM_CnSC_ELSB(1));
-    
-    // Set Edge-aligned PWM, clear Output on match for timer 1 channel 1
-    TPM1_C1SC &= (TPM_CnSC_ELSB_MASK | TPM_CnSC_ELSA_MASK | TPM_CnSC_MSB_MASK | TPM_CnSC_MSA_MASK);
-    TPM1_C1SC |= (TPM_CnSC_MSB(1) | TPM_CnSC_ELSB(1));
-    
-    // Set Edge-aligned PWM, clear Output on match for timer 2 channel 0
-    TPM2_C0SC &= (TPM_CnSC_ELSB_MASK | TPM_CnSC_ELSA_MASK | TPM_CnSC_MSB_MASK | TPM_CnSC_MSA_MASK);
-    TPM2_C0SC |= (TPM_CnSC_MSB(1) | TPM_CnSC_ELSB(1));
-    
-    // Set Edge-aligned PWM, clear Output on match for timer 2 channel 1
-    TPM2_C1SC &= (TPM_CnSC_ELSB_MASK | TPM_CnSC_ELSA_MASK | TPM_CnSC_MSB_MASK | TPM_CnSC_MSA_MASK);
-    TPM2_C1SC |= (TPM_CnSC_MSB(1) | TPM_CnSC_ELSB(1));
+/* Delay Function */
+static void delay(volatile uint32_t nof) {
+  while(nof!=0) {
+    __asm("NOP");
+    nof--;
+  }
 }
 
-static void delay(volatile uint32_t nof) {
-	while(nof!=0) {
-		__asm("NOP");
-		nof--;
-	}
+void UART2_IRQHandler(void) {
+    NVIC_ClearPendingIRQ(UART2_IRQn);
+    
+    uint8_t rx_data = UART2_D;
+
+    if (UART2->S1 & UART_S1_RDRF_MASK) {
+        if (BLUETOOTH_CONNECTED_MASK(rx_data) == BLUETOOTH_CONNECTED) {
+            for (int i = 0; i < 3; i++) {
+                on2GreenLeds();
+                delay(0x120000);
+                offAllLeds();
+                delay(0x120000);
+            }
+        } 
+
+        if (BUTTON_RELEASED_MASK(rx_data) == BUTTON_RELEASED) {
+            onAllGreenLeds();
+        }
+
+        while (UP_BUTTON_PRESSED_MASK(rx_data) == UP_BUTTON_PRESSED || 
+                    LEFT_BUTTON_PRESSED_MASK(rx_data) == LEFT_BUTTON_PRESSED || 
+                    RIGHT_BUTTON_PRESSED_MASK(rx_data) == RIGHT_BUTTON_PRESSED || 
+                    DOWN_BUTTON_PRESSED_MASK(rx_data) == DOWN_BUTTON_PRESSED) {
+
+            ledControl(GREEN_LEDS_STRIP[led_count], LED_ON);
+            delay(0x80000);
+            offAllGreenLeds();
+
+            led_count = ((led_count == 7) ? 0 : led_count + 1);
+
+            rx_data = UART2_D;
+        }
+    }
+    
+    //Clear INT Flag
+    PORTE->ISFR |= MASK(UART_RX_PORTE23);
 }
 
 int main(void) {
     SystemCoreClockUpdate();
-    initPwm();
+    initUART2();
+    initLed();
     
-    TPM1_C0V = 3750;    // going forward
-    TPM1_C1V = 0;       
-    TPM2_C0V = 0;	// going backward
-    TPM2_C1V = 3750;
-    
+    offAllLeds();
     while (1) {
 
     }
