@@ -17,6 +17,7 @@ int counter = 0;
 #include "uart.h"
 #include "ledControl.h"
 #include "motors.h"
+#include "sound.h"
 
 volatile uint32_t rx_data = 0;
 volatile uint32_t led_count = 0;
@@ -154,6 +155,24 @@ void tMotor_Stop(void *argument) {
 	}
 }
 
+void tSound_opening(void *argument) {
+	for (;;) {
+		opening_sound();
+	}
+}
+
+void tSound_running(void *argument) {
+	for (;;) {
+		running_sound();
+	}
+}
+
+void tSound_ending(void *argument) {
+	for (;;) {
+		ending_sound();
+	}
+}
+
 static void delay(volatile uint32_t nof) {
 	while(nof!=0) {
 		__asm("NOP");
@@ -167,9 +186,15 @@ int main (void) {
     SystemCoreClockUpdate();
     initUART2();
 	initMotors();
+	initSound();
     initLed();
     offAllLeds();
+	
+	while (1) {
+		ending_sound();
+	}
  
+	/*
     osKernelInitialize();                 // Initialize CMSIS-RTOS
     osThreadNew(green_led_thread, NULL, NULL);    // Create application main thread
     osThreadNew(red_led_thread, NULL, NULL);    // Create application main thread
@@ -180,4 +205,5 @@ int main (void) {
 	osThreadNew(tMotor_Stop, NULL, NULL);
     osKernelStart();                      // Start thread execution
     for (;;) {}
+	*/
 }

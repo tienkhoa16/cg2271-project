@@ -193,7 +193,7 @@ void delay_mult100(volatile uint32_t nof)
 
 void running_sound(void) {
 	
-	TPM0_C2V = 0xEA6; //  0x0EA6 = 3750 = 7500 / 2 -> 50% duty cycle
+	TPM0_C2V = 6000;
 	
 	while(1)
 	{
@@ -208,24 +208,24 @@ void running_sound(void) {
 
 void ending_sound(void) {
 	
-	TPM0_C2V = 0xEA6; //  0x0EA6 = 3750 = 7500 / 2 -> 50% duty cycle
+	TPM0_C2V = 6000;
 	
-	for (int i = 0; i < OPENING_CNT; i++)
+	for (int i = 0; i < ENDING_CNT; i++)
 	{
-		TPM0->MOD = FREQ_2_MOD(opening_notes[i]);
-		TPM0_C2V = (FREQ_2_MOD(opening_notes[i])) / 2;
+		TPM0->MOD = FREQ_2_MOD(ending_notes[i]);
+		TPM0_C2V = (FREQ_2_MOD(ending_notes[i])) / 2;
 		delay(ending_durations[i]*11000);
 	}
 }
 
 void opening_sound(void) {
 	
-	TPM0_C2V = 0XEA6; //0x0EA6 = 3750 = 7500 / 2 -> 50% duty cycle
+	TPM0_C2V = 6000;
 
-	for (int i = 0; i < ENDING_CNT; i++)
+	for (int i = 0; i < OPENING_CNT; i++)
 	{
-		TPM0->MOD = FREQ_2_MOD(ending_notes[i]);
-		TPM0_C2V = (FREQ_2_MOD(ending_notes[i])) / 2;
+		TPM0->MOD = FREQ_2_MOD(opening_notes[i]);
+		TPM0_C2V = (FREQ_2_MOD(opening_notes[i])) / 2;
 		delay(opening_durations[i]*10000);
 	}
 }

@@ -416,6 +416,8 @@
               <FileName>uart.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\uart.c</FilePath>
+            </File>
+            <File>
               <FileName>sound.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\sound.c</FilePath>
