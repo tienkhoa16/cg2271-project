@@ -21,9 +21,9 @@
 volatile uint32_t rx_data = 0;
 volatile uint32_t led_count = 0;
 
-uint32_t isRunning = -1;
+uint32_t isRunning = 3;
 
-uint32_t GREEN_LEDS_STRIP[8] = {GREEN_LED_1, GREEN_LED_2, GREEN_LED_3, GREEN_LED_4, 
+uint32_t GREEN_LEDS_STRIP[] = {GREEN_LED_1, GREEN_LED_2, GREEN_LED_3, GREEN_LED_4, 
         GREEN_LED_5, GREEN_LED_6, GREEN_LED_7, GREEN_LED_8};
 
 osEventFlagsId_t isReceivingData;
@@ -31,6 +31,11 @@ osEventFlagsId_t shouldForward;
 osEventFlagsId_t shouldReverse;
 osEventFlagsId_t shouldLeft;
 osEventFlagsId_t shouldRight;
+osEventFlagsId_t shouldStop;
+        
+const osThreadAttr_t thread_attr = {
+	.priority = osPriorityAboveNormal
+};      
 
 
 void UART2_IRQHandler(void) {
@@ -39,7 +44,6 @@ void UART2_IRQHandler(void) {
     if (UART2->S1 & UART_S1_RDRF_MASK) {
         // UART RX received all the bits
         rx_data = UART2_D;
-        osEventFlagsSet(isReceivingData, 0x01);
     }
     
     //Clear INT Flag
@@ -89,61 +93,73 @@ void green_led_thread(void *argument) {
     }
 }
 
-
-void tMotor_Left(void *argument) {
-	for (;;) {
-		if (MOVEMENT_BUTTON_MASK(rx_data) == LEFT_BUTTON_PRESSED) {
-			do {
-                isRunning = 1;
-				move(LEFT);
-			} while (MOVEMENT_BUTTON_MASK(rx_data) != LEFT_BUTTON_RELEASED);
-            move(STOP);
-		}
-	}
-}
-
-void tMotor_Right(void *argument) {
-	for (;;) {
-		if (MOVEMENT_BUTTON_MASK(rx_data) == RIGHT_BUTTON_PRESSED) {
-			do {
-                isRunning = 1;
-				move(RIGHT);
-			} while (MOVEMENT_BUTTON_MASK(rx_data) != RIGHT_BUTTON_RELEASED);
-            move(STOP);
-		}
-	}
-}
-
 void tMotor_Forward(void *argument) {
 	for (;;) {
-		if (MOVEMENT_BUTTON_MASK(rx_data) == UP_BUTTON_PRESSED) {
-			do {
-                isRunning = 1;
-				move(FORWARD);
-			} while (MOVEMENT_BUTTON_MASK(rx_data) != UP_BUTTON_RELEASED);
-            move(STOP);
-		}
+        osEventFlagsWait(shouldForward, 0x01, osFlagsWaitAny, osWaitForever);
+        isRunning = 1;
+        move(FORWARD);
 	}
 }
 
 void tMotor_Reverse(void *argument) {
 	for (;;) {
-		if (MOVEMENT_BUTTON_MASK(rx_data) == DOWN_BUTTON_PRESSED) {
-			do {
-                isRunning = 1;
-				move(REVERSE);
-			} while (MOVEMENT_BUTTON_MASK(rx_data) != DOWN_BUTTON_RELEASED);
-            move(STOP);
-		}
+        osEventFlagsWait(shouldReverse, 0x01, osFlagsWaitAny, osWaitForever);
+        isRunning = 1;
+        move(REVERSE);
+    }
+}
+
+void tMotor_Left(void *argument) {
+	for (;;) {
+		osEventFlagsWait(shouldLeft, 0x01, osFlagsWaitAny, osWaitForever);
+        isRunning = 1;
+        move(LEFT);
+	}
+}
+
+void tMotor_Right(void *argument) {
+	for (;;) {
+		osEventFlagsWait(shouldRight, 0x01, osFlagsWaitAny, osWaitForever);
+        isRunning = 1;
+        move(RIGHT);
+	}
+}
+
+void tMotor_Stop(void *argument) {
+	for (;;) {
+        osEventFlagsWait(shouldStop, 0x01, osFlagsWaitAny , osWaitForever);
+        isRunning = 0;
+		move(STOP);
 	}
 }
 
 void tBrain(void *argument) {
-	for (;;) {
-		osEventFlagsWait(isReceivingData, 0x01, osFlagsWaitAny, osWaitForever);
+	for (;;) {      
+        if (rx_data == 32) {
+            move(STOP);
+        }
         
         if (MOVEMENT_BUTTON_MASK(rx_data) == UP_BUTTON_PRESSED) {
             osEventFlagsSet(shouldForward, 0x01);
+        }
+        
+        if (MOVEMENT_BUTTON_MASK(rx_data) == DOWN_BUTTON_PRESSED) {
+            osEventFlagsSet(shouldReverse, 0x01);
+        }
+        
+        if (MOVEMENT_BUTTON_MASK(rx_data) == LEFT_BUTTON_PRESSED) {
+            osEventFlagsSet(shouldLeft, 0x01);
+        }
+        
+        if (MOVEMENT_BUTTON_MASK(rx_data) == RIGHT_BUTTON_PRESSED) {
+            osEventFlagsSet(shouldRight, 0x01);
+        }
+        
+        if (MOVEMENT_BUTTON_MASK(rx_data) == UP_BUTTON_RELEASED
+                || MOVEMENT_BUTTON_MASK(rx_data) == DOWN_BUTTON_RELEASED
+                || MOVEMENT_BUTTON_MASK(rx_data) == LEFT_BUTTON_RELEASED
+                || MOVEMENT_BUTTON_MASK(rx_data) == RIGHT_BUTTON_RELEASED) {
+            osEventFlagsSet(shouldStop, 0x01);
         }
 	}
 }
@@ -174,7 +190,9 @@ int main (void) {
 	initMotors();
 	initSound();
     initLed();
+    
     offAllLeds();
+    move(STOP);
  
     osKernelInitialize();                 // Initialize CMSIS-RTOS
     
@@ -184,6 +202,9 @@ int main (void) {
     shouldReverse = osEventFlagsNew(NULL);
     shouldLeft = osEventFlagsNew(NULL);
     shouldRight = osEventFlagsNew(NULL);
+    shouldStop = osEventFlagsNew(NULL);
+    
+    osThreadNew(tBrain, NULL, NULL);
     
     osThreadNew(green_led_thread, NULL, NULL);    // Create application main thread
     osThreadNew(red_led_thread, NULL, NULL);    // Create application main thread
@@ -192,6 +213,7 @@ int main (void) {
 	osThreadNew(tMotor_Reverse, NULL, NULL);
 	osThreadNew(tMotor_Left, NULL, NULL);
 	osThreadNew(tMotor_Right, NULL, NULL);
+    osThreadNew(tMotor_Stop, NULL, NULL);
     
     osKernelStart();                      // Start thread execution
     for (;;) {}
