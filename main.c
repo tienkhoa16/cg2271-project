@@ -71,28 +71,36 @@ void tLed(void *argument) {
 void tMotor(void *argument) {
 	for (;;) {
 		if (UP_BUTTON_PRESSED_MASK(rx_data) == UP_BUTTON_PRESSED) {
-			move(FORWARD);
-			osDelay(1000);
+			do {
+				move(FORWARD);
+			} while (BUTTON_RELEASED_MASK(rx_data) != BUTTON_RELEASED);
 			move(STOP);
-			osDelay(1000);
+			osDelay(10);
 		}
-		if (LEFT_BUTTON_PRESSED_MASK(rx_data) == LEFT_BUTTON_PRESSED) {
-			move(LEFT);
-			osDelay(1000);
+		else if (LEFT_BUTTON_PRESSED_MASK(rx_data) == LEFT_BUTTON_PRESSED) {
+			do {
+				move(LEFT);
+			} while (BUTTON_RELEASED_MASK(rx_data) != BUTTON_RELEASED);
 			move(STOP);
-			osDelay(1000);
+			osDelay(10);
 		}
-		if (RIGHT_BUTTON_PRESSED_MASK(rx_data) == RIGHT_BUTTON_PRESSED) {
-			move(RIGHT);
-			osDelay(1000);
+		else if (RIGHT_BUTTON_PRESSED_MASK(rx_data) == RIGHT_BUTTON_PRESSED) {
+			do {
+				move(RIGHT);
+			} while (BUTTON_RELEASED_MASK(rx_data) != BUTTON_RELEASED);
 			move(STOP);
-			osDelay(1000);
+			osDelay(10);
 		}
-		if (DOWN_BUTTON_PRESSED_MASK(rx_data) == DOWN_BUTTON_PRESSED) {
-			move(REVERSE);
-			osDelay(1000);
+		else if (DOWN_BUTTON_PRESSED_MASK(rx_data) == DOWN_BUTTON_PRESSED) {
+			do {
+				move(REVERSE);
+			} while (BUTTON_RELEASED_MASK(rx_data) != BUTTON_RELEASED);
 			move(STOP);
-			osDelay(1000);
+			osDelay(10);
+		}
+		else if (BUTTON_RELEASED_MASK(rx_data) == BUTTON_RELEASED) {
+			move(STOP);
+			osDelay(10);
 		}
 	}
 }
