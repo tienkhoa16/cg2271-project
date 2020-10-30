@@ -189,12 +189,7 @@ int main (void) {
 	initSound();
     initLed();
     offAllLeds();
-	
-	while (1) {
-		ending_sound();
-	}
  
-	/*
     osKernelInitialize();                 // Initialize CMSIS-RTOS
     osThreadNew(green_led_thread, NULL, NULL);    // Create application main thread
     osThreadNew(red_led_thread, NULL, NULL);    // Create application main thread
@@ -205,5 +200,5 @@ int main (void) {
 	osThreadNew(tMotor_Stop, NULL, NULL);
     osKernelStart();                      // Start thread execution
     for (;;) {}
-	*/
+
 }
