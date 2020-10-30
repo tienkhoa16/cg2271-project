@@ -6,7 +6,6 @@
 
 #include "MKL25Z4.h"                    // Device header
 
-int counter = 0;
 /*----------------------------------------------------------------------------
  * CMSIS-RTOS 'main' function template
  *---------------------------------------------------------------------------*/
@@ -21,8 +20,18 @@ int counter = 0;
 
 volatile uint32_t rx_data = 0;
 volatile uint32_t led_count = 0;
+
+uint32_t isRunning = -1;
+
 uint32_t GREEN_LEDS_STRIP[8] = {GREEN_LED_1, GREEN_LED_2, GREEN_LED_3, GREEN_LED_4, 
         GREEN_LED_5, GREEN_LED_6, GREEN_LED_7, GREEN_LED_8};
+
+osEventFlagsId_t isReceivingData;
+osEventFlagsId_t shouldForward;
+osEventFlagsId_t shouldReverse;
+osEventFlagsId_t shouldLeft;
+osEventFlagsId_t shouldRight;
+
 
 void UART2_IRQHandler(void) {
     NVIC_ClearPendingIRQ(UART2_IRQn);
@@ -30,6 +39,7 @@ void UART2_IRQHandler(void) {
     if (UART2->S1 & UART_S1_RDRF_MASK) {
         // UART RX received all the bits
         rx_data = UART2_D;
+        osEventFlagsSet(isReceivingData, 0x01);
     }
     
     //Clear INT Flag
@@ -39,28 +49,14 @@ void UART2_IRQHandler(void) {
 /*----------------------------------------------------------------------------
  * Application main thread
  *---------------------------------------------------------------------------*/
-void red_led_thread(void *argument) {
-    int isRunning = -1;
-    
+void red_led_thread(void *argument) {    
     for (;;) {
-        if (BUTTON_RELEASED_MASK(rx_data) == BUTTON_RELEASED) {
-            isRunning = 0;
-        }
-
-        if (UP_BUTTON_PRESSED_MASK(rx_data) == UP_BUTTON_PRESSED || 
-                    LEFT_BUTTON_PRESSED_MASK(rx_data) == LEFT_BUTTON_PRESSED || 
-                    RIGHT_BUTTON_PRESSED_MASK(rx_data) == RIGHT_BUTTON_PRESSED || 
-                    DOWN_BUTTON_PRESSED_MASK(rx_data) == DOWN_BUTTON_PRESSED) {
-            isRunning = 1;
-        }
-                    
         if (isRunning == 0) {
             ledControl(RED_LEDS, LED_ON);
             osDelay(250);
             ledControl(RED_LEDS, LED_OFF);
             osDelay(250);
-        } 
-        if (isRunning == 1) {
+        } else if (isRunning == 1) {
             ledControl(RED_LEDS, LED_ON);
             osDelay(500);
             ledControl(RED_LEDS, LED_OFF);
@@ -70,8 +66,6 @@ void red_led_thread(void *argument) {
 }
 
 void green_led_thread(void *argument) {
-    int isRunning = -1;
-    
     for (;;) {
         if (BLUETOOTH_CONNECTED_MASK(rx_data) == BLUETOOTH_CONNECTED) {
             for (int i = 0; i < 3; i++) {
@@ -81,17 +75,6 @@ void green_led_thread(void *argument) {
                 osDelay(250);
             }
             rx_data = 0;
-        }
-
-        if (BUTTON_RELEASED_MASK(rx_data) == BUTTON_RELEASED) {
-            isRunning = 0;
-        }
-
-        if (UP_BUTTON_PRESSED_MASK(rx_data) == UP_BUTTON_PRESSED || 
-                    LEFT_BUTTON_PRESSED_MASK(rx_data) == LEFT_BUTTON_PRESSED || 
-                    RIGHT_BUTTON_PRESSED_MASK(rx_data) == RIGHT_BUTTON_PRESSED || 
-                    DOWN_BUTTON_PRESSED_MASK(rx_data) == DOWN_BUTTON_PRESSED) {
-            isRunning = 1;
         }
                     
         if (isRunning == 0) {
@@ -106,52 +89,62 @@ void green_led_thread(void *argument) {
     }
 }
 
+
 void tMotor_Left(void *argument) {
 	for (;;) {
-		if (LEFT_BUTTON_PRESSED_MASK(rx_data) == LEFT_BUTTON_PRESSED) {
+		if (MOVEMENT_BUTTON_MASK(rx_data) == LEFT_BUTTON_PRESSED) {
 			do {
+                isRunning = 1;
 				move(LEFT);
-			} while (BUTTON_RELEASED_MASK(rx_data) != BUTTON_RELEASED);
+			} while (MOVEMENT_BUTTON_MASK(rx_data) != LEFT_BUTTON_RELEASED);
+            move(STOP);
 		}
 	}
 }
 
 void tMotor_Right(void *argument) {
 	for (;;) {
-		if (RIGHT_BUTTON_PRESSED_MASK(rx_data) == RIGHT_BUTTON_PRESSED) {
+		if (MOVEMENT_BUTTON_MASK(rx_data) == RIGHT_BUTTON_PRESSED) {
 			do {
+                isRunning = 1;
 				move(RIGHT);
-			} while (BUTTON_RELEASED_MASK(rx_data) != BUTTON_RELEASED);
+			} while (MOVEMENT_BUTTON_MASK(rx_data) != RIGHT_BUTTON_RELEASED);
+            move(STOP);
 		}
 	}
 }
 
 void tMotor_Forward(void *argument) {
 	for (;;) {
-		if (UP_BUTTON_PRESSED_MASK(rx_data) == UP_BUTTON_PRESSED) {
+		if (MOVEMENT_BUTTON_MASK(rx_data) == UP_BUTTON_PRESSED) {
 			do {
+                isRunning = 1;
 				move(FORWARD);
-			} while (BUTTON_RELEASED_MASK(rx_data) != BUTTON_RELEASED);
+			} while (MOVEMENT_BUTTON_MASK(rx_data) != UP_BUTTON_RELEASED);
+            move(STOP);
 		}
 	}
 }
 
 void tMotor_Reverse(void *argument) {
 	for (;;) {
-		if (DOWN_BUTTON_PRESSED_MASK(rx_data) == DOWN_BUTTON_PRESSED) {
+		if (MOVEMENT_BUTTON_MASK(rx_data) == DOWN_BUTTON_PRESSED) {
 			do {
+                isRunning = 1;
 				move(REVERSE);
-			} while (BUTTON_RELEASED_MASK(rx_data) != BUTTON_RELEASED);
+			} while (MOVEMENT_BUTTON_MASK(rx_data) != DOWN_BUTTON_RELEASED);
+            move(STOP);
 		}
 	}
 }
 
-void tMotor_Stop(void *argument) {
+void tBrain(void *argument) {
 	for (;;) {
-		if (BUTTON_RELEASED_MASK(rx_data) == BUTTON_RELEASED) {
-			move(STOP);
-			osDelay(10);
-		}
+		osEventFlagsWait(isReceivingData, 0x01, osFlagsWaitAny, osWaitForever);
+        
+        if (MOVEMENT_BUTTON_MASK(rx_data) == UP_BUTTON_PRESSED) {
+            osEventFlagsSet(shouldForward, 0x01);
+        }
 	}
 }
 
@@ -173,13 +166,6 @@ void tSound_ending(void *argument) {
 	}
 }
 
-static void delay(volatile uint32_t nof) {
-	while(nof!=0) {
-		__asm("NOP");
-		nof--;
-	}
-}
-
 int main (void) {
  
     // System Initialization
@@ -191,13 +177,22 @@ int main (void) {
     offAllLeds();
  
     osKernelInitialize();                 // Initialize CMSIS-RTOS
+    
+    isReceivingData = osEventFlagsNew(NULL);
+    
+    shouldForward = osEventFlagsNew(NULL);
+    shouldReverse = osEventFlagsNew(NULL);
+    shouldLeft = osEventFlagsNew(NULL);
+    shouldRight = osEventFlagsNew(NULL);
+    
     osThreadNew(green_led_thread, NULL, NULL);    // Create application main thread
     osThreadNew(red_led_thread, NULL, NULL);    // Create application main thread
+    
 	osThreadNew(tMotor_Forward, NULL, NULL);
 	osThreadNew(tMotor_Reverse, NULL, NULL);
 	osThreadNew(tMotor_Left, NULL, NULL);
 	osThreadNew(tMotor_Right, NULL, NULL);
-	osThreadNew(tMotor_Stop, NULL, NULL);
+    
     osKernelStart();                      // Start thread execution
     for (;;) {}
 
