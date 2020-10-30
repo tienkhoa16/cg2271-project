@@ -1,3 +1,12 @@
+/**
+ * MOTOR PWM CONNECTION
+ * PTB0 A1, PTB1 A2 Green
+ * PTB2 A1, PTB3 A2 Blue
+ */
+
+#include "MKL25Z4.h"                    // Device header
+
+int counter = 0;
 /*----------------------------------------------------------------------------
  * CMSIS-RTOS 'main' function template
  *---------------------------------------------------------------------------*/
@@ -7,6 +16,7 @@
 #include "cmsis_os2.h"
 #include "uart.h"
 #include "ledControl.h"
+#include "motors.h"
 
 volatile uint32_t rx_data = 0;
 volatile uint32_t led_count = 0;
@@ -94,18 +104,64 @@ void green_led_thread(void *argument) {
         }
     }
 }
+
+void tMotor(void *argument) {
+	for (;;) {
+		if (UP_BUTTON_PRESSED_MASK(rx_data) == UP_BUTTON_PRESSED) {
+			do {
+				move(FORWARD);
+			} while (BUTTON_RELEASED_MASK(rx_data) != BUTTON_RELEASED);
+			move(STOP);
+			osDelay(10);
+		}
+		else if (LEFT_BUTTON_PRESSED_MASK(rx_data) == LEFT_BUTTON_PRESSED) {
+			do {
+				move(LEFT);
+			} while (BUTTON_RELEASED_MASK(rx_data) != BUTTON_RELEASED);
+			move(STOP);
+			osDelay(10);
+		}
+		else if (RIGHT_BUTTON_PRESSED_MASK(rx_data) == RIGHT_BUTTON_PRESSED) {
+			do {
+				move(RIGHT);
+			} while (BUTTON_RELEASED_MASK(rx_data) != BUTTON_RELEASED);
+			move(STOP);
+			osDelay(10);
+		}
+		else if (DOWN_BUTTON_PRESSED_MASK(rx_data) == DOWN_BUTTON_PRESSED) {
+			do {
+				move(REVERSE);
+			} while (BUTTON_RELEASED_MASK(rx_data) != BUTTON_RELEASED);
+			move(STOP);
+			osDelay(10);
+		}
+		else if (BUTTON_RELEASED_MASK(rx_data) == BUTTON_RELEASED) {
+			move(STOP);
+			osDelay(10);
+		}
+	}
+}
+
+static void delay(volatile uint32_t nof) {
+	while(nof!=0) {
+		__asm("NOP");
+		nof--;
+	}
+}
  
 int main (void) {
  
     // System Initialization
     SystemCoreClockUpdate();
     initUART2();
+	initMotors();
     initLed();
     offAllLeds();
  
     osKernelInitialize();                 // Initialize CMSIS-RTOS
     osThreadNew(green_led_thread, NULL, NULL);    // Create application main thread
     osThreadNew(red_led_thread, NULL, NULL);    // Create application main thread
+	osThreadNew(tMotor, NULL, NULL);
     osKernelStart();                      // Start thread execution
     for (;;) {}
 }
