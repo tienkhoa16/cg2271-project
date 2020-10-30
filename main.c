@@ -105,37 +105,49 @@ void green_led_thread(void *argument) {
     }
 }
 
-void tMotor(void *argument) {
+void tMotor_Left(void *argument) {
+	for (;;) {
+		if (LEFT_BUTTON_PRESSED_MASK(rx_data) == LEFT_BUTTON_PRESSED) {
+			do {
+				move(LEFT);
+			} while (BUTTON_RELEASED_MASK(rx_data) != BUTTON_RELEASED);
+		}
+	}
+}
+
+void tMotor_Right(void *argument) {
+	for (;;) {
+		if (RIGHT_BUTTON_PRESSED_MASK(rx_data) == RIGHT_BUTTON_PRESSED) {
+			do {
+				move(RIGHT);
+			} while (BUTTON_RELEASED_MASK(rx_data) != BUTTON_RELEASED);
+		}
+	}
+}
+
+void tMotor_Forward(void *argument) {
 	for (;;) {
 		if (UP_BUTTON_PRESSED_MASK(rx_data) == UP_BUTTON_PRESSED) {
 			do {
 				move(FORWARD);
 			} while (BUTTON_RELEASED_MASK(rx_data) != BUTTON_RELEASED);
-			move(STOP);
-			osDelay(10);
 		}
-		else if (LEFT_BUTTON_PRESSED_MASK(rx_data) == LEFT_BUTTON_PRESSED) {
-			do {
-				move(LEFT);
-			} while (BUTTON_RELEASED_MASK(rx_data) != BUTTON_RELEASED);
-			move(STOP);
-			osDelay(10);
-		}
-		else if (RIGHT_BUTTON_PRESSED_MASK(rx_data) == RIGHT_BUTTON_PRESSED) {
-			do {
-				move(RIGHT);
-			} while (BUTTON_RELEASED_MASK(rx_data) != BUTTON_RELEASED);
-			move(STOP);
-			osDelay(10);
-		}
-		else if (DOWN_BUTTON_PRESSED_MASK(rx_data) == DOWN_BUTTON_PRESSED) {
+	}
+}
+
+void tMotor_Reverse(void *argument) {
+	for (;;) {
+		if (DOWN_BUTTON_PRESSED_MASK(rx_data) == DOWN_BUTTON_PRESSED) {
 			do {
 				move(REVERSE);
 			} while (BUTTON_RELEASED_MASK(rx_data) != BUTTON_RELEASED);
-			move(STOP);
-			osDelay(10);
 		}
-		else if (BUTTON_RELEASED_MASK(rx_data) == BUTTON_RELEASED) {
+	}
+}
+
+void tMotor_Stop(void *argument) {
+	for (;;) {
+		if (BUTTON_RELEASED_MASK(rx_data) == BUTTON_RELEASED) {
 			move(STOP);
 			osDelay(10);
 		}
@@ -148,7 +160,7 @@ static void delay(volatile uint32_t nof) {
 		nof--;
 	}
 }
- 
+
 int main (void) {
  
     // System Initialization
@@ -161,7 +173,11 @@ int main (void) {
     osKernelInitialize();                 // Initialize CMSIS-RTOS
     osThreadNew(green_led_thread, NULL, NULL);    // Create application main thread
     osThreadNew(red_led_thread, NULL, NULL);    // Create application main thread
-	osThreadNew(tMotor, NULL, NULL);
+	osThreadNew(tMotor_Forward, NULL, NULL);
+	osThreadNew(tMotor_Reverse, NULL, NULL);
+	osThreadNew(tMotor_Left, NULL, NULL);
+	osThreadNew(tMotor_Right, NULL, NULL);
+	osThreadNew(tMotor_Stop, NULL, NULL);
     osKernelStart();                      // Start thread execution
     for (;;) {}
 }
