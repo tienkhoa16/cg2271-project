@@ -416,6 +416,14 @@
               <FileName>uart.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\uart.c</FilePath>
+              <FileName>sound.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\sound.c</FilePath>
+            </File>
+            <File>
+              <FileName>sound.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\sound.h</FilePath>
             </File>
           </Files>
         </Group>

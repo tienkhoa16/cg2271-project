@@ -250,13 +250,15 @@
     </File>
     <File>
       <GroupNumber>1</GroupNumber>
-      <FileNumber>5</FileNumber>
+      <FileNumber>5</FileNumber>d
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>.\motors.c</PathWithFileName>
       <FilenameWithoutPath>motors.c</FilenameWithoutPath>
+      <PathWithFileName>.\sound.c</PathWithFileName>
+      <FilenameWithoutPath>sound.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -281,6 +283,8 @@
       <bDave2>0</bDave2>
       <PathWithFileName>.\uart.c</PathWithFileName>
       <FilenameWithoutPath>uart.c</FilenameWithoutPath>
+      <PathWithFileName>.\sound.h</PathWithFileName>
+      <FilenameWithoutPath>sound.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
