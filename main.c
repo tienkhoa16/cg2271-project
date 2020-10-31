@@ -96,32 +96,40 @@ void green_led_thread(void *argument) {
 void tMotor_Forward(void *argument) {
 	for (;;) {
         osEventFlagsWait(shouldForward, 0x01, osFlagsWaitAny, osWaitForever);
-        isRunning = 1;
-        move(FORWARD);
+        while (MOVEMENT_BUTTON_MASK(rx_data) != UP_BUTTON_RELEASED) {
+            isRunning = 1;
+            move(FORWARD);
+        }
 	}
 }
 
 void tMotor_Reverse(void *argument) {
 	for (;;) {
         osEventFlagsWait(shouldReverse, 0x01, osFlagsWaitAny, osWaitForever);
-        isRunning = 1;
-        move(REVERSE);
+        while (MOVEMENT_BUTTON_MASK(rx_data) != DOWN_BUTTON_RELEASED) {
+            isRunning = 1;
+            move(REVERSE);
+        }
     }
 }
 
 void tMotor_Left(void *argument) {
 	for (;;) {
 		osEventFlagsWait(shouldLeft, 0x01, osFlagsWaitAny, osWaitForever);
-        isRunning = 1;
-        move(LEFT);
+        while (MOVEMENT_BUTTON_MASK(rx_data) != LEFT_BUTTON_RELEASED) {
+            isRunning = 1;
+            move(LEFT);
+        }
 	}
 }
 
 void tMotor_Right(void *argument) {
 	for (;;) {
 		osEventFlagsWait(shouldRight, 0x01, osFlagsWaitAny, osWaitForever);
-        isRunning = 1;
-        move(RIGHT);
+        while (MOVEMENT_BUTTON_MASK(rx_data) != RIGHT_BUTTON_RELEASED) {
+            isRunning = 1;
+            move(RIGHT);
+        }
 	}
 }
 
