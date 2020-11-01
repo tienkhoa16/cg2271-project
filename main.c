@@ -37,8 +37,6 @@ const osThreadAttr_t thread_attr = {
 	.priority = osPriorityAboveNormal
 };      
 
-int isPressingArray[] = {0, 0, 0, 0}; // UP, DOWN, LEFT, RIGHT
-
 void UART2_IRQHandler(void) {
     NVIC_ClearPendingIRQ(UART2_IRQn);
     
@@ -51,15 +49,6 @@ void UART2_IRQHandler(void) {
     PORTE->ISFR |= MASK(UART_RX_PORTE23);
 }
 
-int checkAllReleased() {
-    for (int i = 0; i < 4; i++) {
-        if (isPressingArray[i] == 1) {
-            return 0;
-        }
-    }
-    return 1;
-}
- 
 /*----------------------------------------------------------------------------
  * Application main thread
  *---------------------------------------------------------------------------*/
@@ -106,45 +95,49 @@ void green_led_thread(void *argument) {
 void tMotor_Forward(void *argument) {
 	for (;;) {
         osEventFlagsWait(shouldForward, 0x01, osFlagsWaitAny, osWaitForever);
-        isPressingArray[0] = 1;
-        isRunning = 1;
-        move(FORWARD);
+        do {
+            isRunning = 1;
+            move(FORWARD);
+        } while (MOVEMENT_BUTTON_MASK(rx_data) != UP_BUTTON_RELEASED);
 	}
 }
 
 void tMotor_Reverse(void *argument) {
 	for (;;) {
         osEventFlagsWait(shouldReverse, 0x01, osFlagsWaitAny, osWaitForever);
-        isPressingArray[1] = 1;
-        isRunning = 1;
-        move(REVERSE);
+        do {
+            isRunning = 1;
+            move(REVERSE);
+        } while (MOVEMENT_BUTTON_MASK(rx_data) != DOWN_BUTTON_RELEASED);
     }
 }
 
 void tMotor_Left(void *argument) {
 	for (;;) {
 		osEventFlagsWait(shouldLeft, 0x01, osFlagsWaitAny, osWaitForever);
-        isPressingArray[2] = 1;
-        isRunning = 1;
-        move(LEFT);
+        do {
+            isRunning = 1;
+            move(LEFT);
+        } while (MOVEMENT_BUTTON_MASK(rx_data) != LEFT_BUTTON_RELEASED);
 	}
 }
 
 void tMotor_Right(void *argument) {
 	for (;;) {
 		osEventFlagsWait(shouldRight, 0x01, osFlagsWaitAny, osWaitForever);
-        isPressingArray[3] = 1;
-        isRunning = 1;
-        move(RIGHT);
+        do {
+            isRunning = 1;
+            move(RIGHT);
+        } while (MOVEMENT_BUTTON_MASK(rx_data) != RIGHT_BUTTON_RELEASED);
 	}
 }
 
 void tMotor_Stop(void *argument) {
-	for (;;) {
-        osEventFlagsWait(shouldStop, 0x01, osFlagsWaitAny , osWaitForever);
-        isRunning = 0;
-		move(STOP);
-	}
+//	for (;;) {
+//        osEventFlagsWait(shouldStop, 0x01, osFlagsWaitAny , osWaitForever);
+//        isRunning = 0;
+//		move(STOP);
+//	}
 }
 
 void tBrain(void *argument) {
@@ -172,11 +165,6 @@ void tBrain(void *argument) {
                 || (!(MOVEMENT_BUTTON_MASK(rx_data) == RIGHT_BUTTON_RELEASED) && isPressingArray[3] == 1)) {
             osEventFlagsSet(shouldRight, 0x01);
         }
-                
-        isPressingArray[0] = (MOVEMENT_BUTTON_MASK(rx_data) == UP_BUTTON_RELEASED) ? 0 : isPressingArray[0];
-        isPressingArray[1] = (MOVEMENT_BUTTON_MASK(rx_data) == DOWN_BUTTON_RELEASED) ? 0 : isPressingArray[1];
-        isPressingArray[2] = (MOVEMENT_BUTTON_MASK(rx_data) == LEFT_BUTTON_RELEASED) ? 0 : isPressingArray[2];
-        isPressingArray[3] = (MOVEMENT_BUTTON_MASK(rx_data) == RIGHT_BUTTON_RELEASED) ? 0 : isPressingArray[3];
 
         if (checkAllReleased() == 1) {
             osEventFlagsSet(shouldStop, 0x01);

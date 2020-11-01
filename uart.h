@@ -8,22 +8,22 @@
 #define BLUETOOTH_CONNECTED         1
 #define BLUETOOTH_CONNECTED_MASK(x) (x & 0x01)
 
-#define MOVEMENT_BUTTON_MASK(x)     (x & 0x1E)
+#define MOVEMENT_BUTTON_MASK(x)     ((x & 0x1E) >> 1)
 
-#define UP_BUTTON_PRESSED           2
-#define UP_BUTTON_RELEASED          4
+#define UP_BUTTON_PRESSED           1
+#define UP_BUTTON_RELEASED          2
 
-#define DOWN_BUTTON_PRESSED         6
-#define DOWN_BUTTON_RELEASED        8
+#define DOWN_BUTTON_PRESSED         3
+#define DOWN_BUTTON_RELEASED        4
 
-#define LEFT_BUTTON_PRESSED         10
-#define LEFT_BUTTON_RELEASED        12
+#define LEFT_BUTTON_PRESSED         5
+#define LEFT_BUTTON_RELEASED        6
 
-#define RIGHT_BUTTON_PRESSED        14
-#define RIGHT_BUTTON_RELEASED       16
+#define RIGHT_BUTTON_PRESSED        7
+#define RIGHT_BUTTON_RELEASED       8
 
-#define FINISH_BUTTON_PRESSED       32
-#define FINISH_BUTTON_PRESS_MASK(x) (x & 0x20)
+#define FINISH_BUTTON_PRESSED       1
+#define FINISH_BUTTON_PRESS_MASK(x) ((x & 0x20) >> 5)
 
 /* Init UART2 */
 void initUART2(void);
