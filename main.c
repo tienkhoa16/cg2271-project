@@ -33,9 +33,10 @@ osEventFlagsId_t shouldLeft;
 osEventFlagsId_t shouldRight;
 osEventFlagsId_t shouldStop;
         
-const osThreadAttr_t thread_attr = {
-	.priority = osPriorityAboveNormal
+const osThreadAttr_t thread_attr = {    // unused
+    .priority = osPriorityAboveNormal
 };      
+
 
 void UART2_IRQHandler(void) {
     NVIC_ClearPendingIRQ(UART2_IRQn);
@@ -48,7 +49,7 @@ void UART2_IRQHandler(void) {
     //Clear INT Flag
     PORTE->ISFR |= MASK(UART_RX_PORTE23);
 }
-
+ 
 /*----------------------------------------------------------------------------
  * Application main thread
  *---------------------------------------------------------------------------*/
@@ -93,17 +94,17 @@ void green_led_thread(void *argument) {
 }
 
 void tMotor_Forward(void *argument) {
-	for (;;) {
+    for (;;) {
         osEventFlagsWait(shouldForward, 0x01, osFlagsWaitAny, osWaitForever);
         do {
             isRunning = 1;
             move(FORWARD);
         } while (MOVEMENT_BUTTON_MASK(rx_data) != UP_BUTTON_RELEASED);
-	}
+    }
 }
 
 void tMotor_Reverse(void *argument) {
-	for (;;) {
+    for (;;) {
         osEventFlagsWait(shouldReverse, 0x01, osFlagsWaitAny, osWaitForever);
         do {
             isRunning = 1;
@@ -113,81 +114,80 @@ void tMotor_Reverse(void *argument) {
 }
 
 void tMotor_Left(void *argument) {
-	for (;;) {
-		osEventFlagsWait(shouldLeft, 0x01, osFlagsWaitAny, osWaitForever);
+    for (;;) {
+        osEventFlagsWait(shouldLeft, 0x01, osFlagsWaitAny, osWaitForever);
         do {
             isRunning = 1;
             move(LEFT);
         } while (MOVEMENT_BUTTON_MASK(rx_data) != LEFT_BUTTON_RELEASED);
-	}
+    }
 }
 
 void tMotor_Right(void *argument) {
-	for (;;) {
-		osEventFlagsWait(shouldRight, 0x01, osFlagsWaitAny, osWaitForever);
+    for (;;) {
+        osEventFlagsWait(shouldRight, 0x01, osFlagsWaitAny, osWaitForever);
         do {
             isRunning = 1;
             move(RIGHT);
         } while (MOVEMENT_BUTTON_MASK(rx_data) != RIGHT_BUTTON_RELEASED);
-	}
+    }
 }
 
 void tMotor_Stop(void *argument) {
-//	for (;;) {
-//        osEventFlagsWait(shouldStop, 0x01, osFlagsWaitAny , osWaitForever);
-//        isRunning = 0;
-//		move(STOP);
-//	}
+     for (;;) {
+           osEventFlagsWait(shouldStop, 0x01, osFlagsWaitAny , osWaitForever);
+           isRunning = 0;
+         move(STOP);
+     }
 }
 
 void tBrain(void *argument) {
-	for (;;) {        
+    for (;;) {      
         if (rx_data == 32) {
             move(STOP);
         }
         
-        if (MOVEMENT_BUTTON_MASK(rx_data) == UP_BUTTON_PRESSED 
-                || (!(MOVEMENT_BUTTON_MASK(rx_data) == UP_BUTTON_RELEASED) && isPressingArray[0] == 1)) {
+        if (MOVEMENT_BUTTON_MASK(rx_data) == UP_BUTTON_PRESSED) {
             osEventFlagsSet(shouldForward, 0x01);
         }
         
-        if (MOVEMENT_BUTTON_MASK(rx_data) == DOWN_BUTTON_PRESSED
-                || (!(MOVEMENT_BUTTON_MASK(rx_data) == DOWN_BUTTON_RELEASED) && isPressingArray[1] == 1)) {
+        if (MOVEMENT_BUTTON_MASK(rx_data) == DOWN_BUTTON_PRESSED) {
             osEventFlagsSet(shouldReverse, 0x01);
         }
         
-        if (MOVEMENT_BUTTON_MASK(rx_data) == LEFT_BUTTON_PRESSED
-                || (!(MOVEMENT_BUTTON_MASK(rx_data) == LEFT_BUTTON_RELEASED) && isPressingArray[2] == 1)) {
+        if (MOVEMENT_BUTTON_MASK(rx_data) == LEFT_BUTTON_PRESSED) {
             osEventFlagsSet(shouldLeft, 0x01);
         }
         
-        if (MOVEMENT_BUTTON_MASK(rx_data) == RIGHT_BUTTON_PRESSED
-                || (!(MOVEMENT_BUTTON_MASK(rx_data) == RIGHT_BUTTON_RELEASED) && isPressingArray[3] == 1)) {
+        if (MOVEMENT_BUTTON_MASK(rx_data) == RIGHT_BUTTON_PRESSED) {
             osEventFlagsSet(shouldRight, 0x01);
         }
-
-        if (checkAllReleased() == 1) {
-            osEventFlagsSet(shouldStop, 0x01);
-        }
-	}
+        
+       if (MOVEMENT_BUTTON_MASK(rx_data) == UP_BUTTON_RELEASED
+               || MOVEMENT_BUTTON_MASK(rx_data) == DOWN_BUTTON_RELEASED
+               || MOVEMENT_BUTTON_MASK(rx_data) == LEFT_BUTTON_RELEASED
+               || MOVEMENT_BUTTON_MASK(rx_data) == RIGHT_BUTTON_RELEASED) {
+           osEventFlagsSet(shouldStop, 0x01);
+       }
+    }
 }
 
 void tSound_opening(void *argument) {
-	for (;;) {
-		opening_sound();
-	}
+    for (;;) {
+        opening_sound();
+    }
 }
 
 void tSound_running(void *argument) {
-	for (;;) {
-		running_sound();
-	}
+    for (;;) {
+        running_sound();
+    }
 }
 
 void tSound_ending(void *argument) {
-	for (;;) {
-		ending_sound();
-	}
+    for (;;) {
+        ending_sound();
+    }
 }
 
 int main (void) {
@@ -195,8 +195,8 @@ int main (void) {
     // System Initialization
     SystemCoreClockUpdate();
     initUART2();
-	initMotors();
-	initSound();
+    initMotors();
+    initSound();
     initLed();
     
     offAllLeds();
@@ -217,10 +217,10 @@ int main (void) {
     osThreadNew(green_led_thread, NULL, NULL);    // Create application main thread
     osThreadNew(red_led_thread, NULL, NULL);    // Create application main thread
     
-	osThreadNew(tMotor_Forward, NULL, NULL);
-	osThreadNew(tMotor_Reverse, NULL, NULL);
-	osThreadNew(tMotor_Left, NULL, NULL);
-	osThreadNew(tMotor_Right, NULL, NULL);
+    osThreadNew(tMotor_Forward, NULL, NULL);
+    osThreadNew(tMotor_Reverse, NULL, NULL);
+    osThreadNew(tMotor_Left, NULL, NULL);
+    osThreadNew(tMotor_Right, NULL, NULL);
     osThreadNew(tMotor_Stop, NULL, NULL);
     
     osKernelStart();                      // Start thread execution
