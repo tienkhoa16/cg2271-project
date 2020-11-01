@@ -96,49 +96,57 @@ void green_led_thread(void *argument) {
 void tMotor_Forward(void *argument) {
 	for (;;) {
         osEventFlagsWait(shouldForward, 0x01, osFlagsWaitAny, osWaitForever);
-        while (MOVEMENT_BUTTON_MASK(rx_data) != UP_BUTTON_RELEASED) {
+        do {
             isRunning = 1;
             move(FORWARD);
-        }
+        } while (MOVEMENT_BUTTON_MASK(rx_data) != UP_BUTTON_RELEASED);
+        move(STOP);
+        osEventFlagsClear(shouldForward, 0x01);
 	}
 }
 
 void tMotor_Reverse(void *argument) {
 	for (;;) {
         osEventFlagsWait(shouldReverse, 0x01, osFlagsWaitAny, osWaitForever);
-        while (MOVEMENT_BUTTON_MASK(rx_data) != DOWN_BUTTON_RELEASED) {
+        do {
             isRunning = 1;
             move(REVERSE);
-        }
+        } while (MOVEMENT_BUTTON_MASK(rx_data) != DOWN_BUTTON_RELEASED);
+        osEventFlagsClear(shouldReverse, 0x01);
+        move(STOP);
     }
 }
 
 void tMotor_Left(void *argument) {
 	for (;;) {
 		osEventFlagsWait(shouldLeft, 0x01, osFlagsWaitAny, osWaitForever);
-        while (MOVEMENT_BUTTON_MASK(rx_data) != LEFT_BUTTON_RELEASED) {
+        do {
             isRunning = 1;
             move(LEFT);
-        }
+        } while (MOVEMENT_BUTTON_MASK(rx_data) != LEFT_BUTTON_RELEASED);
+        osEventFlagsClear(shouldLeft, 0x01);
+        move(STOP);
 	}
 }
 
 void tMotor_Right(void *argument) {
 	for (;;) {
 		osEventFlagsWait(shouldRight, 0x01, osFlagsWaitAny, osWaitForever);
-        while (MOVEMENT_BUTTON_MASK(rx_data) != RIGHT_BUTTON_RELEASED) {
+        do {
             isRunning = 1;
             move(RIGHT);
-        }
+        } while (MOVEMENT_BUTTON_MASK(rx_data) != RIGHT_BUTTON_RELEASED);
+        osEventFlagsClear(shouldRight, 0x01);
+        move(STOP);
 	}
 }
 
 void tMotor_Stop(void *argument) {
-	for (;;) {
-        osEventFlagsWait(shouldStop, 0x01, osFlagsWaitAny , osWaitForever);
-        isRunning = 0;
-		move(STOP);
-	}
+//	for (;;) {
+//        osEventFlagsWait(shouldStop, 0x01, osFlagsWaitAny , osWaitForever);
+//        isRunning = 0;
+//		move(STOP);
+//	}
 }
 
 void tBrain(void *argument) {
@@ -163,12 +171,12 @@ void tBrain(void *argument) {
             osEventFlagsSet(shouldRight, 0x01);
         }
         
-        if (MOVEMENT_BUTTON_MASK(rx_data) == UP_BUTTON_RELEASED
-                || MOVEMENT_BUTTON_MASK(rx_data) == DOWN_BUTTON_RELEASED
-                || MOVEMENT_BUTTON_MASK(rx_data) == LEFT_BUTTON_RELEASED
-                || MOVEMENT_BUTTON_MASK(rx_data) == RIGHT_BUTTON_RELEASED) {
-            osEventFlagsSet(shouldStop, 0x01);
-        }
+//        if (MOVEMENT_BUTTON_MASK(rx_data) == UP_BUTTON_RELEASED
+//                || MOVEMENT_BUTTON_MASK(rx_data) == DOWN_BUTTON_RELEASED
+//                || MOVEMENT_BUTTON_MASK(rx_data) == LEFT_BUTTON_RELEASED
+//                || MOVEMENT_BUTTON_MASK(rx_data) == RIGHT_BUTTON_RELEASED) {
+//            osEventFlagsSet(shouldStop, 0x01);
+//        }
 	}
 }
 
