@@ -95,80 +95,80 @@ void green_led_thread(void *argument) {
 
 void tMotor_Forward(void *argument) {
     for (;;) {
-        osEventFlagsWait(shouldForward, 0x01, osFlagsWaitAny, osWaitForever);
-        do {
-            isRunning = 1;
-            move(FORWARD);
-        } while (MOVEMENT_BUTTON_MASK(rx_data) != UP_BUTTON_RELEASED);
+        osEventFlagsWait(shouldForward, 0x01, osFlagsNoClear, osWaitForever);
+        isRunning = 1;
+        move(FORWARD);
     }
 }
 
 void tMotor_Reverse(void *argument) {
     for (;;) {
-        osEventFlagsWait(shouldReverse, 0x01, osFlagsWaitAny, osWaitForever);
-        do {
-            isRunning = 1;
-            move(REVERSE);
-        } while (MOVEMENT_BUTTON_MASK(rx_data) != DOWN_BUTTON_RELEASED);
+        osEventFlagsWait(shouldReverse, 0x01, osFlagsNoClear, osWaitForever);
+        isRunning = 1;
+        move(REVERSE);
     }
 }
 
 void tMotor_Left(void *argument) {
     for (;;) {
-        osEventFlagsWait(shouldLeft, 0x01, osFlagsWaitAny, osWaitForever);
-        do {
-            isRunning = 1;
-            move(LEFT);
-        } while (MOVEMENT_BUTTON_MASK(rx_data) != LEFT_BUTTON_RELEASED);
+        osEventFlagsWait(shouldLeft, 0x01, osFlagsNoClear, osWaitForever);
+        isRunning = 1;
+        move(LEFT);
     }
 }
 
 void tMotor_Right(void *argument) {
     for (;;) {
-        osEventFlagsWait(shouldRight, 0x01, osFlagsWaitAny, osWaitForever);
-        do {
-            isRunning = 1;
-            move(RIGHT);
-        } while (MOVEMENT_BUTTON_MASK(rx_data) != RIGHT_BUTTON_RELEASED);
+        osEventFlagsWait(shouldRight, 0x01, osFlagsNoClear, osWaitForever);
+        isRunning = 1;
+        move(RIGHT);
     }
 }
 
 void tMotor_Stop(void *argument) {
-     for (;;) {
-           osEventFlagsWait(shouldStop, 0x01, osFlagsWaitAny , osWaitForever);
-           isRunning = 0;
-         move(STOP);
-     }
+    for (;;) {
+        osEventFlagsWait(shouldStop, 0x01, osFlagsWaitAny , osWaitForever);
+        isRunning = 0;
+        move(STOP);
+    }
 }
 
 void tBrain(void *argument) {
-    for (;;) {      
+    for (;;) {
         if (rx_data == 32) {
             move(STOP);
         }
         
-        if (MOVEMENT_BUTTON_MASK(rx_data) == UP_BUTTON_PRESSED) {
-            osEventFlagsSet(shouldForward, 0x01);
+        switch (MOVEMENT_BUTTON_MASK(rx_data)) {
+            case UP_BUTTON_PRESSED:
+                osEventFlagsSet(shouldForward, 0x01);
+                break;
+            case DOWN_BUTTON_PRESSED:
+                osEventFlagsSet(shouldReverse, 0x01);
+                break;
+            case LEFT_BUTTON_PRESSED:
+                osEventFlagsSet(shouldLeft, 0x01);
+                break;
+            case RIGHT_BUTTON_PRESSED:
+                osEventFlagsSet(shouldRight, 0x01);
+                break;
+            case UP_BUTTON_RELEASED:
+                osEventFlagsClear(shouldForward, 0x01);
+                osEventFlagsSet(shouldStop, 0x01);
+                break;
+            case DOWN_BUTTON_RELEASED:
+                osEventFlagsClear(shouldReverse, 0x01);
+                osEventFlagsSet(shouldStop, 0x01);
+                break;
+            case LEFT_BUTTON_RELEASED:
+                osEventFlagsClear(shouldLeft, 0x01);
+                osEventFlagsSet(shouldStop, 0x01);
+                break;
+            case RIGHT_BUTTON_RELEASED:
+                osEventFlagsClear(shouldRight, 0x01);
+                osEventFlagsSet(shouldStop, 0x01);
+                break;
         }
-        
-        if (MOVEMENT_BUTTON_MASK(rx_data) == DOWN_BUTTON_PRESSED) {
-            osEventFlagsSet(shouldReverse, 0x01);
-        }
-        
-        if (MOVEMENT_BUTTON_MASK(rx_data) == LEFT_BUTTON_PRESSED) {
-            osEventFlagsSet(shouldLeft, 0x01);
-        }
-        
-        if (MOVEMENT_BUTTON_MASK(rx_data) == RIGHT_BUTTON_PRESSED) {
-            osEventFlagsSet(shouldRight, 0x01);
-        }
-        
-       if (MOVEMENT_BUTTON_MASK(rx_data) == UP_BUTTON_RELEASED
-               || MOVEMENT_BUTTON_MASK(rx_data) == DOWN_BUTTON_RELEASED
-               || MOVEMENT_BUTTON_MASK(rx_data) == LEFT_BUTTON_RELEASED
-               || MOVEMENT_BUTTON_MASK(rx_data) == RIGHT_BUTTON_RELEASED) {
-           osEventFlagsSet(shouldStop, 0x01);
-       }
     }
 }
 
