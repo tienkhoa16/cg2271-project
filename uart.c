@@ -36,3 +36,43 @@ void initUART2(void) {
     UART2_C2 |= (UART_C2_RE_MASK);
     UART2_C2 |= (UART_C2_RIE_MASK);
 }
+
+void initQueue(Q_T *q) {
+	unsigned int i;
+	for(i=0; i < Q_SIZE; i++) {
+		q->Data[i] = 0;
+	}
+	q->Head = 0;
+	q->Tail = 0;
+	q->size = 0;
+}
+
+int Q_Empty(Q_T *q) {
+	return q->size == 0;
+}
+
+int Q_Full(Q_T *q) {
+	return q->size == Q_SIZE;
+}
+
+int Q_Enqueue(Q_T* q, unsigned char d) {
+	if (!Q_Full(q)) {
+		q->Data[q->Tail++] = d;
+		q->Tail %= Q_SIZE;
+		q->size++;
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+unsigned char Q_Dequeue(Q_T* q) {
+	unsigned char t=0;
+	if (!Q_Empty(q)) {
+		t = q->Data[q->Head];
+		q->Data[q->Head++] = 0;
+		q->Head %= Q_SIZE;
+		q->size--;
+	}
+	return t;
+}

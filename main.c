@@ -23,6 +23,8 @@ volatile uint32_t led_count = 0;
 
 int isRunning = -1;
 
+Q_T rx_q; // receive queue
+
 uint32_t GREEN_LEDS_STRIP[] = {GREEN_LED_1, GREEN_LED_2, GREEN_LED_3, GREEN_LED_4, 
         GREEN_LED_5, GREEN_LED_6, GREEN_LED_7, GREEN_LED_8};
 
@@ -43,8 +45,12 @@ void UART2_IRQHandler(void) {
     
     if (UART2->S1 & UART_S1_RDRF_MASK) {
         // UART RX received all the bits
-        rx_data = UART2_D;
+		if (!Q_Full(&rx_q)) {
+			Q_Enqueue(&rx_q, UART2_D);
+		}
     }
+	
+	rx_data = Q_Dequeue(&rx_q);
     
     //Clear INT Flag
     PORTE->ISFR |= MASK(UART_RX_PORTE23);
@@ -138,7 +144,7 @@ void tBrain(void *argument) {
         if (rx_data == 32) {
             move(STOP);
         }
-        
+		
         switch (MOVEMENT_BUTTON_MASK(rx_data)) {
             case UP_BUTTON_PRESSED:
                 osEventFlagsSet(shouldForward, 0x01);
@@ -168,7 +174,7 @@ void tBrain(void *argument) {
                 osEventFlagsClear(shouldRight, 0x01);
                 osEventFlagsSet(shouldStop, 0x01);
                 break;
-        }
+        }	
     }
 }
 
@@ -197,6 +203,7 @@ int main (void) {
     initUART2();
     initMotors();
     initSound();
+	initQueue(&rx_q);
     initLed();
     
     offAllLeds();
@@ -206,6 +213,7 @@ int main (void) {
     
     isReceivingData = osEventFlagsNew(NULL);
     
+	// Create new Event Flags
     shouldForward = osEventFlagsNew(NULL);
     shouldReverse = osEventFlagsNew(NULL);
     shouldLeft = osEventFlagsNew(NULL);
