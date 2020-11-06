@@ -45,12 +45,11 @@ void UART2_IRQHandler(void) {
     
     if (UART2->S1 & UART_S1_RDRF_MASK) {
         // UART RX received all the bits
-		if (!Q_Full(&rx_q)) {
-			Q_Enqueue(&rx_q, UART2_D);
-		}
+//		if (!Q_Full(&rx_q)) {
+//			Q_Enqueue(&rx_q, UART2_D);
+//		}
+        rx_data = UART2_D;
     }
-	
-	rx_data = Q_Dequeue(&rx_q);
     
     //Clear INT Flag
     PORTE->ISFR |= MASK(UART_RX_PORTE23);
@@ -175,12 +174,13 @@ void tBrain(void *argument) {
                 osEventFlagsClear(shouldRight, 0x01);
                 osEventFlagsSet(shouldStop, 0x01);
                 break;
-			case ALL_BUTTON_RELEASED:
-				osEventFlagsClear(shouldForward, 0x01);
-				osEventFlagsClear(shouldReverse, 0x01);
-				osEventFlagsClear(shouldLeft, 0x01);
-				osEventFlagsClear(shouldRight, 0x01);
+            case ALL_BUTTON_RELEASED:
+                osEventFlagsClear(shouldForward, 0x01);
+                osEventFlagsClear(shouldReverse, 0x01);
+                osEventFlagsClear(shouldLeft, 0x01);
+                osEventFlagsClear(shouldRight, 0x01);
                 osEventFlagsSet(shouldStop, 0x01);
+                break;
         }	
     }
 }
