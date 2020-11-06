@@ -23,6 +23,8 @@
 #define RIGHT_BUTTON_PRESSED        7
 #define RIGHT_BUTTON_RELEASED       8
 
+#define ALL_BUTTON_RELEASED         9
+
 #define FINISH_BUTTON_PRESSED       1
 #define FINISH_BUTTON_PRESS_MASK(x) ((x & 0x20) >> 5)
 
