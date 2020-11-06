@@ -19,7 +19,6 @@
 #include "sound.h"
 
 volatile uint32_t rx_data = 0;
-volatile uint32_t led_count = 0;
 
 int isRunning = -1;
 
@@ -28,12 +27,15 @@ Q_T rx_q; // receive queue
 uint32_t GREEN_LEDS_STRIP[] = {GREEN_LED_1, GREEN_LED_2, GREEN_LED_3, GREEN_LED_4, 
         GREEN_LED_5, GREEN_LED_6, GREEN_LED_7, GREEN_LED_8};
 
-osEventFlagsId_t isReceivingData;
 osEventFlagsId_t shouldForward;
 osEventFlagsId_t shouldReverse;
 osEventFlagsId_t shouldLeft;
 osEventFlagsId_t shouldRight;
 osEventFlagsId_t shouldStop;
+
+osEventFlagsId_t bluetoothConnected;
+osEventFlagsId_t shouldPlayRunning;
+osEventFlagsId_t shouldPlayEnding;
         
 const osThreadAttr_t thread_attr = {    // unused
     .priority = osPriorityAboveNormal
@@ -44,10 +46,6 @@ void UART2_IRQHandler(void) {
     NVIC_ClearPendingIRQ(UART2_IRQn);
     
     if (UART2->S1 & UART_S1_RDRF_MASK) {
-        // UART RX received all the bits
-//		if (!Q_Full(&rx_q)) {
-//			Q_Enqueue(&rx_q, UART2_D);
-//		}
         rx_data = UART2_D;
     }
     
@@ -75,20 +73,20 @@ void red_led_thread(void *argument) {
 }
 
 void green_led_thread(void *argument) {
+    osEventFlagsWait(bluetoothConnected, 0x01, osFlagsWaitAny, osWaitForever);
+    for (int i = 0; i < 3; i++) {
+        on2GreenLeds();
+        osDelay(250);
+        offAllLeds();
+        osDelay(250);
+    }
+    
+    uint32_t led_count = 0;
     for (;;) {
-        if (BLUETOOTH_CONNECTED_MASK(rx_data) == BLUETOOTH_CONNECTED) {
-            for (int i = 0; i < 3; i++) {
-                on2GreenLeds();
-                osDelay(250);
-                offAllLeds();
-                osDelay(250);
-            }
-            rx_data = 0;
-        }
-                    
         if (isRunning == 0) {
             onAllGreenLeds();
         } else if (isRunning == 1) {
+
             ledControl(GREEN_LEDS_STRIP[led_count], LED_ON);
             osDelay(50);
             offAllGreenLeds();
@@ -140,22 +138,31 @@ void tMotor_Stop(void *argument) {
 
 void tBrain(void *argument) {
     for (;;) {
+        if (BLUETOOTH_CONNECTED_MASK(rx_data) == BLUETOOTH_CONNECTED) {
+            osEventFlagsSet(bluetoothConnected, 0x01);
+        }
+        
         if (rx_data == 32) {
-            move(STOP);
+            osEventFlagsSet(shouldStop, 0x01);
+            osEventFlagsSet(shouldPlayEnding, 0x01);
         }
 		
         switch (MOVEMENT_BUTTON_MASK(rx_data)) {
             case UP_BUTTON_PRESSED:
                 osEventFlagsSet(shouldForward, 0x01);
+                osEventFlagsSet(shouldPlayRunning, 0x01);
                 break;
             case DOWN_BUTTON_PRESSED:
                 osEventFlagsSet(shouldReverse, 0x01);
+                osEventFlagsSet(shouldPlayRunning, 0x01);
                 break;
             case LEFT_BUTTON_PRESSED:
                 osEventFlagsSet(shouldLeft, 0x01);
+                osEventFlagsSet(shouldPlayRunning, 0x01);
                 break;
             case RIGHT_BUTTON_PRESSED:
                 osEventFlagsSet(shouldRight, 0x01);
+                osEventFlagsSet(shouldPlayRunning, 0x01);
                 break;
             case UP_BUTTON_RELEASED:
                 osEventFlagsClear(shouldForward, 0x01);
@@ -180,26 +187,27 @@ void tBrain(void *argument) {
                 osEventFlagsClear(shouldRight, 0x01);
                 osEventFlagsSet(shouldStop, 0x01);
                 break;
-        }	
+        }
     }
 }
 
 void tSound_opening(void *argument) {
-    for (;;) {
-        opening_sound();
-    }
+    osEventFlagsWait(bluetoothConnected, 0x01, osFlagsWaitAny, osWaitForever);
+    opening_sound();
 }
 
 void tSound_running(void *argument) {
     for (;;) {
+        osEventFlagsWait(shouldPlayRunning, 0x01, osFlagsNoClear, osWaitForever);
+        stop_sound();
         running_sound();
     }
 }
 
 void tSound_ending(void *argument) {
-    for (;;) {
-        ending_sound();
-    }
+    osEventFlagsWait(shouldPlayEnding, 0x01, osFlagsWaitAny, osWaitForever);
+    stop_sound();
+    ending_sound();
 }
 
 int main (void) {
@@ -214,10 +222,14 @@ int main (void) {
     
     offAllLeds();
     move(STOP);
+    stop_sound();
  
     osKernelInitialize();                 // Initialize CMSIS-RTOS
     
-    isReceivingData = osEventFlagsNew(NULL);
+    bluetoothConnected = osEventFlagsNew(NULL);
+    
+    shouldPlayRunning = osEventFlagsNew(NULL);
+    shouldPlayEnding = osEventFlagsNew(NULL);
     
 	// Create new Event Flags
     shouldForward = osEventFlagsNew(NULL);
@@ -236,6 +248,10 @@ int main (void) {
     osThreadNew(tMotor_Left, NULL, NULL);
     osThreadNew(tMotor_Right, NULL, NULL);
     osThreadNew(tMotor_Stop, NULL, NULL);
+    
+    osThreadNew(tSound_opening, NULL, NULL);
+    osThreadNew(tSound_running, NULL, NULL);
+    osThreadNew(tSound_ending, NULL, NULL);
     
     osKernelStart();                      // Start thread execution
     for (;;) {}

@@ -1,10 +1,11 @@
 #include "MKL25Z4.h"
 #include "sound.h"
+#include "cmsis_os2.h"
 
-#define RUNNING_CNT sizeof(running_notes)/sizeof(running_notes[0])
-#define OPENING_CNT sizeof(opening_notes)/sizeof(opening_notes[0])
-#define ENDING_CNT sizeof(ending_notes)/sizeof(ending_notes[0])
-#define FREQ_2_MOD(x) (375000/x)
+#define RUNNING_CNT     sizeof(running_notes)/sizeof(running_notes[0])
+#define OPENING_CNT     sizeof(opening_notes)/sizeof(opening_notes[0])
+#define ENDING_CNT      sizeof(ending_notes)/sizeof(ending_notes[0])
+#define FREQ_2_MOD(x)   (375000/x)
 
 // Glory glory ManUtd
 int ending_notes[] = {
@@ -73,7 +74,7 @@ int running_notes[] = {
 	E5, 0, 0, F5, 0, 0,
 	E5, E5, 0, G5, 0, E5, D5, 0, 0,
 	D5, 0, 0, C5, 0, 0,
-	B4, C5, 0, B4, 0, A4
+	B4, C5, 0, B4, 0, A4, 0
 };
 
 int running_durations[] = {         
@@ -127,7 +128,7 @@ int running_durations[] = {
 	250, 125, 375, 250, 125, 375,
 	125, 125, 125, 125, 125, 125, 125, 125, 375,
 	250, 125, 375, 250, 125, 375,
-	125, 125, 125, 125, 125, 500
+	125, 125, 125, 125, 125, 500, 100
 };
 
 // NOKIA RINGTONE
@@ -160,9 +161,6 @@ void initSound(void)
 	SIM->SOPT2 &= ~SIM_SOPT2_TPMSRC_MASK;
 	SIM->SOPT2 |= SIM_SOPT2_TPMSRC(1); // MCGFLLCLK clock or MCGPLLCLK/2
 	
-	// Set modulo value 48000000 / 128 = 375000 / 7500 = 50Hz
-	TPM0->MOD = 7500;
-	
 	// Edge-aligned PWM
 	// Update SnC register: CMOD = 01, PS = 111 (Prescalar: 128)
 	TPM0->SC &= ~((TPM_SC_CMOD_MASK) | (TPM_SC_PS_MASK));
@@ -174,58 +172,31 @@ void initSound(void)
 	TPM0_C2SC |= (TPM_CnSC_ELSB(1) | TPM_CnSC_MSB(1));
 }
 
-/* Delay function */
-static void delay(volatile uint32_t nof) 
-{
-    while (nof != 0) {
-        __ASM("NOP");
-        nof--;
+void running_sound(void) {
+    for (int i = 0; i < RUNNING_CNT; i++) {
+        TPM0->MOD = FREQ_2_MOD(running_notes[i]);
+        TPM0_C2V = 0;
+        osDelay(running_durations[i]);
     }
 }
 
-void delay_mult100(volatile uint32_t nof) 
-{
-	for (int i = 0; i < 100; i++)
-	{
-		delay(nof);
-	}
-}
-
-void running_sound(void) {
-	
-	TPM0_C2V = 6000;
-	
-	while(1)
-	{
-		for (int i = 0; i < RUNNING_CNT; i++)
-		{
-			TPM0->MOD = FREQ_2_MOD(running_notes[i]);
-			TPM0_C2V = (FREQ_2_MOD(running_notes[i])) / 2;
-			delay(running_durations[i]*6000);
-		}
-	}
-}
-
 void ending_sound(void) {
-	
-	TPM0_C2V = 6000;
-	
-	for (int i = 0; i < ENDING_CNT; i++)
-	{
+	for (int i = 0; i < ENDING_CNT; i++) {
 		TPM0->MOD = FREQ_2_MOD(ending_notes[i]);
 		TPM0_C2V = (FREQ_2_MOD(ending_notes[i])) / 2;
-		delay(ending_durations[i]*11000);
+		osDelay(ending_durations[i]);
 	}
 }
 
 void opening_sound(void) {
-	
-	TPM0_C2V = 6000;
-
-	for (int i = 0; i < OPENING_CNT; i++)
-	{
+	for (int i = 0; i < OPENING_CNT; i++) {
 		TPM0->MOD = FREQ_2_MOD(opening_notes[i]);
 		TPM0_C2V = (FREQ_2_MOD(opening_notes[i])) / 2;
-		delay(opening_durations[i]*10000);
+		osDelay(opening_durations[i]);
 	}
+}
+
+void stop_sound(void) {
+	TPM0_C2V = 0;
+    osDelay(100);
 }
