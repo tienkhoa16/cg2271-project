@@ -141,7 +141,7 @@ void tBrain(void *argument) {
         if (BLUETOOTH_CONNECTED_MASK(rx_data) == BLUETOOTH_CONNECTED) {
             osEventFlagsSet(bluetoothConnected, 0x01);
         }
-        
+
         if (rx_data == 32) {
             osEventFlagsSet(shouldStop, 0x01);
             osEventFlagsSet(shouldPlayEnding, 0x01);
