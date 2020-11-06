@@ -141,6 +141,7 @@ void tMotor_Stop(void *argument) {
 
 void tBrain(void *argument) {
     for (;;) {
+		
         if (rx_data == 32) {
             move(STOP);
         }
@@ -174,6 +175,12 @@ void tBrain(void *argument) {
                 osEventFlagsClear(shouldRight, 0x01);
                 osEventFlagsSet(shouldStop, 0x01);
                 break;
+			case ALL_BUTTON_RELEASED:
+				osEventFlagsClear(shouldForward, 0x01);
+				osEventFlagsClear(shouldReverse, 0x01);
+				osEventFlagsClear(shouldLeft, 0x01);
+				osEventFlagsClear(shouldRight, 0x01);
+                osEventFlagsSet(shouldStop, 0x01);
         }	
     }
 }
