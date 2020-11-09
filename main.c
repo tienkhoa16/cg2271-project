@@ -144,6 +144,7 @@ void tBrain(void *argument) {
 
         if (rx_data == 32) {
             osEventFlagsSet(shouldStop, 0x01);
+            osEventFlagsClear(shouldPlayRunning, 0x01);
             osEventFlagsSet(shouldPlayEnding, 0x01);
         }
 		
@@ -205,9 +206,12 @@ void tSound_running(void *argument) {
 }
 
 void tSound_ending(void *argument) {
-    osEventFlagsWait(shouldPlayEnding, 0x01, osFlagsWaitAny, osWaitForever);
-    stop_sound();
-    ending_sound();
+    for (;;) {
+        osEventFlagsWait(shouldPlayEnding, 0x01, osFlagsWaitAny, osWaitForever);
+        osEventFlagsClear(shouldPlayRunning, 0x01);
+        stop_sound();
+        ending_sound();
+    }
 }
 
 int main (void) {
@@ -251,9 +255,8 @@ int main (void) {
     
     osThreadNew(tSound_opening, NULL, NULL);
     osThreadNew(tSound_running, NULL, NULL);
-    osThreadNew(tSound_ending, NULL, NULL);
+    osThreadNew(tSound_ending, NULL, &thread_attr);
     
     osKernelStart();                      // Start thread execution
     for (;;) {}
-
 }
