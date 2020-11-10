@@ -144,7 +144,9 @@ void tBrain(void *argument) {
 
         if (rx_data == 32) {
             osEventFlagsSet(shouldStop, 0x01);
+
             osEventFlagsClear(shouldPlayRunning, 0x01);
+
             osEventFlagsSet(shouldPlayEnding, 0x01);
         }
 		
@@ -227,7 +229,7 @@ int main (void) {
     offAllLeds();
     move(STOP);
     stop_sound();
- 
+	
     osKernelInitialize();                 // Initialize CMSIS-RTOS
     
     bluetoothConnected = osEventFlagsNew(NULL);

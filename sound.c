@@ -175,7 +175,7 @@ void initSound(void)
 void running_sound(void) {
     for (int i = 0; i < RUNNING_CNT; i++) {
         TPM0->MOD = FREQ_2_MOD(running_notes[i]);
-        TPM0_C2V = 0;
+        TPM0_C2V = (FREQ_2_MOD(running_notes[i])) / 2;
         osDelay(running_durations[i]);
     }
 }
@@ -184,17 +184,18 @@ void ending_sound(void) {
 	for (int i = 0; i < ENDING_CNT; i++) {
 		TPM0->MOD = FREQ_2_MOD(ending_notes[i]);
 		TPM0_C2V = (FREQ_2_MOD(ending_notes[i])) / 2;
-		osDelay(ending_durations[i]);
+		osDelay(ending_durations[i]*2);
 	}
-    TPM0_C2V = 0;
-    SIM->SCGC6 &= ~SIM_SCGC6_TPM0_MASK;
+    	TPM0_C2V = 0;
+    	SIM->SCGC6 &= ~SIM_SCGC6_TPM0_MASK;
+
 }
 
 void opening_sound(void) {
 	for (int i = 0; i < OPENING_CNT; i++) {
 		TPM0->MOD = FREQ_2_MOD(opening_notes[i]);
 		TPM0_C2V = (FREQ_2_MOD(opening_notes[i])) / 2;
-		osDelay(opening_durations[i]);
+		osDelay(opening_durations[i]*2);
 	}
 }
 
