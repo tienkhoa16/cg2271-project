@@ -186,7 +186,9 @@ void ending_sound(void) {
 		TPM0_C2V = (FREQ_2_MOD(ending_notes[i])) / 2;
 		osDelay(ending_durations[i]*2);
 	}
-	SIM->SCGC6 &= ~SIM_SCGC6_TPM0_MASK;
+    	TPM0_C2V = 0;
+    	SIM->SCGC6 &= ~SIM_SCGC6_TPM0_MASK;
+
 }
 
 void opening_sound(void) {
