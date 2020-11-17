@@ -26,11 +26,6 @@ osEventFlagsId_t shouldStop;
 osEventFlagsId_t bluetoothConnected;
 osEventFlagsId_t shouldPlayRunning;
 osEventFlagsId_t shouldPlayEnding;
-        
-const osThreadAttr_t thread_attr = {   
-    .priority = osPriorityAboveNormal
-};      
-
 
 void UART2_IRQHandler(void) {
     NVIC_ClearPendingIRQ(UART2_IRQn);
@@ -250,7 +245,7 @@ int main (void) {
     
     osThreadNew(tSound_opening, NULL, NULL);
     osThreadNew(tSound_running, NULL, NULL);
-    osThreadNew(tSound_ending, NULL, &thread_attr);
+    osThreadNew(tSound_ending, NULL, NULL);
     
     osKernelStart();                      // Start thread execution
     for (;;) {}

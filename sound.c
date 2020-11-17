@@ -44,7 +44,7 @@ int running_notes[] = {
 	D5, E5, A4, 0, 
 	A4, C5, B4, B4, 0,
 	C5, A4, B4, 0,
-//76
+
 	A4, A4, 
 	//Repeat of first part
 	A4, B4, C5, C5, 0, 
