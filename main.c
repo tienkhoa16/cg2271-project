@@ -209,7 +209,7 @@ void tSound_running(void *argument) {
 
 void tSound_ending(void *argument) {
     for (;;) {
-        osEventFlagsWait(shouldPlayEnding, 0x01, osFlagsWaitAny, osWaitForever);
+        osEventFlagsWait(shouldPlayEnding, 0x01, osFlagsNoClear, osWaitForever);
         osEventFlagsClear(shouldPlayRunning, 0x01);
         stop_sound();
         ending_sound();
