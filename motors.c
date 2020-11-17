@@ -66,13 +66,13 @@ int getPWM(int duty_cycle){
 
 void move(int dir) {
 	if (dir == FORWARD) {
-		TPM1_C0V = getPWM(FAST);   	// Right forward
+		TPM1_C0V = getPWM(FAST)*DEFLECT;   	// Right forward
 		TPM1_C1V = 0;				
 		TPM2_C0V = getPWM(FAST);	// Left forward
 		TPM2_C1V = 0;
 	} else if (dir == REVERSE) {
 		TPM1_C0V = 0;				// Right reverse
-		TPM1_C1V = getPWM(FAST);
+		TPM1_C1V = getPWM(FAST)*DEFLECT;
 		TPM2_C0V = 0;				// Left reverse
 		TPM2_C1V = getPWM(FAST);
 	} else if (dir == LEFT) {		// Left turn

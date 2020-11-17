@@ -43,7 +43,7 @@ int running_notes[] = {
 	D5, E5, A4, 0, 
 	A4, C5, B4, B4, 0,
 	C5, A4, B4, 0,
-
+//76
 	A4, A4, 
 	//Repeat of first part
 	A4, B4, C5, C5, 0, 
@@ -172,18 +172,16 @@ void initSound(void)
 	TPM0_C2SC |= (TPM_CnSC_ELSB(1) | TPM_CnSC_MSB(1));
 }
 
-void running_sound(void) {
-    for (int i = 0; i < RUNNING_CNT; i++) {
-        TPM0->MOD = FREQ_2_MOD(running_notes[i]);
-        TPM0_C2V = (FREQ_2_MOD(running_notes[i])) / 2;
-        osDelay(running_durations[i]);
-    }
+void running_sound(int i) {
+	TPM0->MOD = FREQ_2_MOD(running_notes[i]);
+	TPM0_C2V = FREQ_2_MOD(running_notes[i]*DUTY_CYCLE);
+	osDelay(running_durations[i]);
 }
 
 void ending_sound(void) {
 	for (int i = 0; i < ENDING_CNT; i++) {
 		TPM0->MOD = FREQ_2_MOD(ending_notes[i]);
-		TPM0_C2V = (FREQ_2_MOD(ending_notes[i])) / 2;
+		TPM0_C2V = FREQ_2_MOD(ending_notes[i]*DUTY_CYCLE);
 		osDelay(ending_durations[i]*2);
 	}
     	TPM0_C2V = 0;
@@ -194,7 +192,7 @@ void ending_sound(void) {
 void opening_sound(void) {
 	for (int i = 0; i < OPENING_CNT; i++) {
 		TPM0->MOD = FREQ_2_MOD(opening_notes[i]);
-		TPM0_C2V = (FREQ_2_MOD(opening_notes[i])) / 2;
+		TPM0_C2V = FREQ_2_MOD(opening_notes[i]*DUTY_CYCLE);
 		osDelay(opening_durations[i]*2);
 	}
 }

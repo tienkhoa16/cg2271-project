@@ -142,11 +142,9 @@ void tBrain(void *argument) {
             osEventFlagsSet(bluetoothConnected, 0x01);
         }
 
-        if (rx_data == 32) {
+        if (FINISH_BUTTON_PRESS_MASK(rx_data) == FINISH_BUTTON_PRESSED) {
             osEventFlagsSet(shouldStop, 0x01);
-
             osEventFlagsClear(shouldPlayRunning, 0x01);
-
             osEventFlagsSet(shouldPlayEnding, 0x01);
         }
 		
@@ -201,10 +199,12 @@ void tSound_opening(void *argument) {
 
 void tSound_running(void *argument) {
     for (;;) {
+		for (int i = 0; i < RUNNING_COUNT; i++) {
         osEventFlagsWait(shouldPlayRunning, 0x01, osFlagsNoClear, osWaitForever);
         stop_sound();
-        running_sound();
-    }
+			running_sound(i);
+		}
+	}
 }
 
 void tSound_ending(void *argument) {
@@ -219,6 +219,7 @@ void tSound_ending(void *argument) {
 int main (void) {
  
     // System Initialization
+
     SystemCoreClockUpdate();
     initUART2();
     initMotors();
