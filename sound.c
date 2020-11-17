@@ -23,6 +23,7 @@ int ending_durations[] = {
 };
 
 // Pirates of the Carribean
+// Retrieved from: https://github.com/xitangg/-Pirates-of-the-Caribbean-Theme-Song
 int running_notes[] = {
 	E4, G4, A4, A4, 0, 
 	A4, B4, C5, C5, 0, 

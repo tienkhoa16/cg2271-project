@@ -14,9 +14,7 @@
 
 volatile uint32_t rx_data = 0;
 
-int isRunning = -1;
-
-uint32_t GREEN_LEDS_STRIP[] = {GREEN_LED_1, GREEN_LED_2, GREEN_LED_3, GREEN_LED_4, 
+const uint32_t GREEN_LEDS_STRIP[] = {GREEN_LED_1, GREEN_LED_2, GREEN_LED_3, GREEN_LED_4, 
         GREEN_LED_5, GREEN_LED_6, GREEN_LED_7, GREEN_LED_8};
 
 osEventFlagsId_t shouldForward;
@@ -44,18 +42,25 @@ void UART2_IRQHandler(void) {
     //Clear INT Flag
     PORTE->ISFR |= MASK(UART_RX_PORTE23);
 }
+
+int isRunning(void) {
+	return osEventFlagsGet(shouldForward) == 0x01 ||
+		osEventFlagsGet(shouldLeft) == 0x01 ||
+		osEventFlagsGet(shouldReverse) == 0x01 ||
+		osEventFlagsGet(shouldRight) == 0x01;
+}
  
 /*----------------------------------------------------------------------------
  * Application main thread
  *---------------------------------------------------------------------------*/
 void red_led_thread(void *argument) {    
     for (;;) {
-        if (isRunning == 0) {
+        if (isRunning() == 0) {
             ledControl(RED_LEDS, LED_ON);
             osDelay(250);
             ledControl(RED_LEDS, LED_OFF);
             osDelay(250);
-        } else if (isRunning == 1) {
+        } else if (isRunning() == 1) {
             ledControl(RED_LEDS, LED_ON);
             osDelay(500);
             ledControl(RED_LEDS, LED_OFF);
@@ -75,9 +80,9 @@ void green_led_thread(void *argument) {
     
     uint32_t led_count = 0;
     for (;;) {
-        if (isRunning == 0) {
+        if (isRunning() == 0) {
             onAllGreenLeds();
-        } else if (isRunning == 1) {
+        } else if (isRunning() == 1) {
 
             ledControl(GREEN_LEDS_STRIP[led_count], LED_ON);
             osDelay(50);
@@ -91,7 +96,6 @@ void green_led_thread(void *argument) {
 void tMotor_Forward(void *argument) {
     for (;;) {
         osEventFlagsWait(shouldForward, 0x01, osFlagsNoClear, osWaitForever);
-        isRunning = 1;
         move(FORWARD);
     }
 }
@@ -99,7 +103,6 @@ void tMotor_Forward(void *argument) {
 void tMotor_Reverse(void *argument) {
     for (;;) {
         osEventFlagsWait(shouldReverse, 0x01, osFlagsNoClear, osWaitForever);
-        isRunning = 1;
         move(REVERSE);
     }
 }
@@ -107,7 +110,6 @@ void tMotor_Reverse(void *argument) {
 void tMotor_Left(void *argument) {
     for (;;) {
         osEventFlagsWait(shouldLeft, 0x01, osFlagsNoClear, osWaitForever);
-        isRunning = 1;
         move(LEFT);
     }
 }
@@ -115,7 +117,6 @@ void tMotor_Left(void *argument) {
 void tMotor_Right(void *argument) {
     for (;;) {
         osEventFlagsWait(shouldRight, 0x01, osFlagsNoClear, osWaitForever);
-        isRunning = 1;
         move(RIGHT);
     }
 }
@@ -123,7 +124,6 @@ void tMotor_Right(void *argument) {
 void tMotor_Stop(void *argument) {
     for (;;) {
         osEventFlagsWait(shouldStop, 0x01, osFlagsWaitAny , osWaitForever);
-        isRunning = 0;
         move(STOP);
     }
 }
