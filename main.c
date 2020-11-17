@@ -54,7 +54,8 @@ int isRunning(void) {
  * Application main thread
  *---------------------------------------------------------------------------*/
 void red_led_thread(void *argument) {    
-    for (;;) {
+	osEventFlagsWait(bluetoothConnected, 0x01, osFlagsWaitAny, osWaitForever);
+	for (;;) {
         if (isRunning() == 0) {
             ledControl(RED_LEDS, LED_ON);
             osDelay(250);
@@ -192,8 +193,8 @@ void tSound_opening(void *argument) {
 void tSound_running(void *argument) {
     for (;;) {
 		for (int i = 0; i < RUNNING_COUNT; i++) {
-        osEventFlagsWait(shouldPlayRunning, 0x01, osFlagsNoClear, osWaitForever);
-        stop_sound();
+			osEventFlagsWait(shouldPlayRunning, 0x01, osFlagsNoClear, osWaitForever);
+			stop_sound();
 			running_sound(i);
 		}
 	}
