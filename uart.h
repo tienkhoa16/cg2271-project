@@ -28,20 +28,7 @@
 #define FINISH_BUTTON_PRESSED       1
 #define FINISH_BUTTON_PRESS_MASK(x) ((x & 0x20) >> 5)
 
-typedef struct {
-	unsigned char Data[Q_SIZE];
-	unsigned int Head;
-	unsigned int Tail;
-	unsigned int size;
-} Q_T;
-
 /* Init UART2 */
 void initUART2(void);
-
-void initQueue(Q_T*);
-int Q_Empty(Q_T*);
-int Q_Full(Q_T*);
-int Q_Enqueue(Q_T*,	unsigned char);
-unsigned char Q_Dequeue(Q_T*);
 
 #endif

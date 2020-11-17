@@ -1,9 +1,3 @@
-/**
- * MOTOR PWM CONNECTION
- * PTB0 A1, PTB1 A2 Green
- * PTB2 A1, PTB3 A2 Blue
- */
-
 #include "MKL25Z4.h"                    // Device header
 
 /*----------------------------------------------------------------------------
@@ -22,8 +16,6 @@ volatile uint32_t rx_data = 0;
 
 int isRunning = -1;
 
-Q_T rx_q; // receive queue
-
 uint32_t GREEN_LEDS_STRIP[] = {GREEN_LED_1, GREEN_LED_2, GREEN_LED_3, GREEN_LED_4, 
         GREEN_LED_5, GREEN_LED_6, GREEN_LED_7, GREEN_LED_8};
 
@@ -37,7 +29,7 @@ osEventFlagsId_t bluetoothConnected;
 osEventFlagsId_t shouldPlayRunning;
 osEventFlagsId_t shouldPlayEnding;
         
-const osThreadAttr_t thread_attr = {    // unused
+const osThreadAttr_t thread_attr = {   
     .priority = osPriorityAboveNormal
 };      
 
@@ -224,7 +216,6 @@ int main (void) {
     initUART2();
     initMotors();
     initSound();
-	initQueue(&rx_q);
     initLed();
     
     offAllLeds();

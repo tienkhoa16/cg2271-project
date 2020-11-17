@@ -18,7 +18,6 @@
 #define LEFT			3
 #define RIGHT			4
 
-#define DEFLECT 1
 void initMotors(void);
 
 int getPWM(int);
