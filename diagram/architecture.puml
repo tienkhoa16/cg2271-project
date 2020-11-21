@@ -1,0 +1,37 @@
+@startuml
+skinparam MinClassWidth 50
+skinparam ParticipantPadding 10
+skinparam Shadowing false
+skinparam DefaultTextAlignment center
+skinparam BackgroundColor #FFFFFFF
+skinparam packageStyle Frame
+skinparam Actor {
+    BorderColor navy
+}
+
+[BT06] --> [UART2_IRQHandler] : data
+
+package "Main Controller Thread" #yellow {
+    [UART2_IRQHandler] -right-> [tBrain] : rx_data
+}
+
+package "Movement Threads" #orange {
+    [tBrain] ----> [tMotor_Forward]
+    [tBrain] ----> [tMotor_Reverse]
+    [tBrain] ----> [tMotor_Left]
+    [tBrain] ----> [tMotor_Right]
+    [tBrain] ----> [tMotor_Stop]
+}
+
+package "Audio Threads" #aquamarine {
+    [tBrain] -up--> [tSound_opening]
+    [tBrain] -up--> [tSound_running]
+    [tBrain] -up--> [tSound_ending]
+}
+
+package "LED Threads" #greenyellow{
+    [tBrain] -u-> [green_led_thread]
+    [tBrain] -u-> [red_led_thread]
+}
+
+@enduml
