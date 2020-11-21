@@ -1,9 +1,3 @@
-/**
- * MOTOR PWM CONNECTION
- * PTB0 A1, PTB1 A2 Green
- * PTB2 A1, PTB3 A2 Blue
- */
-
 #include "MKL25Z4.h"                    // Device header
 
 /*----------------------------------------------------------------------------
@@ -20,11 +14,7 @@
 
 volatile uint32_t rx_data = 0;
 
-int isRunning = -1;
-
-Q_T rx_q; // receive queue
-
-uint32_t GREEN_LEDS_STRIP[] = {GREEN_LED_1, GREEN_LED_2, GREEN_LED_3, GREEN_LED_4, 
+const uint32_t GREEN_LEDS_STRIP[] = {GREEN_LED_1, GREEN_LED_2, GREEN_LED_3, GREEN_LED_4, 
         GREEN_LED_5, GREEN_LED_6, GREEN_LED_7, GREEN_LED_8};
 
 osEventFlagsId_t shouldForward;
@@ -36,11 +26,6 @@ osEventFlagsId_t shouldStop;
 osEventFlagsId_t bluetoothConnected;
 osEventFlagsId_t shouldPlayRunning;
 osEventFlagsId_t shouldPlayEnding;
-        
-const osThreadAttr_t thread_attr = {    // unused
-    .priority = osPriorityAboveNormal
-};      
-
 
 void UART2_IRQHandler(void) {
     NVIC_ClearPendingIRQ(UART2_IRQn);
@@ -52,18 +37,26 @@ void UART2_IRQHandler(void) {
     //Clear INT Flag
     PORTE->ISFR |= MASK(UART_RX_PORTE23);
 }
+
+int isRunning(void) {
+	return osEventFlagsGet(shouldForward) == 0x01 ||
+		osEventFlagsGet(shouldLeft) == 0x01 ||
+		osEventFlagsGet(shouldReverse) == 0x01 ||
+		osEventFlagsGet(shouldRight) == 0x01;
+}
  
 /*----------------------------------------------------------------------------
  * Application main thread
  *---------------------------------------------------------------------------*/
 void red_led_thread(void *argument) {    
-    for (;;) {
-        if (isRunning == 0) {
+	osEventFlagsWait(bluetoothConnected, 0x01, osFlagsWaitAny, osWaitForever);
+	for (;;) {
+        if (isRunning() == 0) {
             ledControl(RED_LEDS, LED_ON);
             osDelay(250);
             ledControl(RED_LEDS, LED_OFF);
             osDelay(250);
-        } else if (isRunning == 1) {
+        } else if (isRunning() == 1) {
             ledControl(RED_LEDS, LED_ON);
             osDelay(500);
             ledControl(RED_LEDS, LED_OFF);
@@ -83,9 +76,9 @@ void green_led_thread(void *argument) {
     
     uint32_t led_count = 0;
     for (;;) {
-        if (isRunning == 0) {
+        if (isRunning() == 0) {
             onAllGreenLeds();
-        } else if (isRunning == 1) {
+        } else if (isRunning() == 1) {
 
             ledControl(GREEN_LEDS_STRIP[led_count], LED_ON);
             osDelay(50);
@@ -99,7 +92,6 @@ void green_led_thread(void *argument) {
 void tMotor_Forward(void *argument) {
     for (;;) {
         osEventFlagsWait(shouldForward, 0x01, osFlagsNoClear, osWaitForever);
-        isRunning = 1;
         move(FORWARD);
     }
 }
@@ -107,7 +99,6 @@ void tMotor_Forward(void *argument) {
 void tMotor_Reverse(void *argument) {
     for (;;) {
         osEventFlagsWait(shouldReverse, 0x01, osFlagsNoClear, osWaitForever);
-        isRunning = 1;
         move(REVERSE);
     }
 }
@@ -115,7 +106,6 @@ void tMotor_Reverse(void *argument) {
 void tMotor_Left(void *argument) {
     for (;;) {
         osEventFlagsWait(shouldLeft, 0x01, osFlagsNoClear, osWaitForever);
-        isRunning = 1;
         move(LEFT);
     }
 }
@@ -123,7 +113,6 @@ void tMotor_Left(void *argument) {
 void tMotor_Right(void *argument) {
     for (;;) {
         osEventFlagsWait(shouldRight, 0x01, osFlagsNoClear, osWaitForever);
-        isRunning = 1;
         move(RIGHT);
     }
 }
@@ -131,7 +120,6 @@ void tMotor_Right(void *argument) {
 void tMotor_Stop(void *argument) {
     for (;;) {
         osEventFlagsWait(shouldStop, 0x01, osFlagsWaitAny , osWaitForever);
-        isRunning = 0;
         move(STOP);
     }
 }
@@ -142,11 +130,9 @@ void tBrain(void *argument) {
             osEventFlagsSet(bluetoothConnected, 0x01);
         }
 
-        if (rx_data == 32) {
+        if (FINISH_BUTTON_PRESS_MASK(rx_data) == FINISH_BUTTON_PRESSED) {
             osEventFlagsSet(shouldStop, 0x01);
-
             osEventFlagsClear(shouldPlayRunning, 0x01);
-
             osEventFlagsSet(shouldPlayEnding, 0x01);
         }
 		
@@ -201,10 +187,12 @@ void tSound_opening(void *argument) {
 
 void tSound_running(void *argument) {
     for (;;) {
-        osEventFlagsWait(shouldPlayRunning, 0x01, osFlagsNoClear, osWaitForever);
-        stop_sound();
-        running_sound();
-    }
+		for (int i = 0; i < RUNNING_COUNT; i++) {
+			osEventFlagsWait(shouldPlayRunning, 0x01, osFlagsNoClear, osWaitForever);
+			stop_sound();
+			running_sound(i);
+		}
+	}
 }
 
 void tSound_ending(void *argument) {
@@ -219,11 +207,11 @@ void tSound_ending(void *argument) {
 int main (void) {
  
     // System Initialization
+
     SystemCoreClockUpdate();
     initUART2();
     initMotors();
     initSound();
-	initQueue(&rx_q);
     initLed();
     
     offAllLeds();
@@ -257,7 +245,7 @@ int main (void) {
     
     osThreadNew(tSound_opening, NULL, NULL);
     osThreadNew(tSound_running, NULL, NULL);
-    osThreadNew(tSound_ending, NULL, &thread_attr);
+    osThreadNew(tSound_ending, NULL, NULL);
     
     osKernelStart();                      // Start thread execution
     for (;;) {}

@@ -23,6 +23,7 @@ int ending_durations[] = {
 };
 
 // Pirates of the Carribean
+// Retrieved from: https://github.com/xitangg/-Pirates-of-the-Caribbean-Theme-Song
 int running_notes[] = {
 	E4, G4, A4, A4, 0, 
 	A4, B4, C5, C5, 0, 
@@ -172,18 +173,16 @@ void initSound(void)
 	TPM0_C2SC |= (TPM_CnSC_ELSB(1) | TPM_CnSC_MSB(1));
 }
 
-void running_sound(void) {
-    for (int i = 0; i < RUNNING_CNT; i++) {
-        TPM0->MOD = FREQ_2_MOD(running_notes[i]);
-        TPM0_C2V = (FREQ_2_MOD(running_notes[i])) / 2;
-        osDelay(running_durations[i]);
-    }
+void running_sound(int i) {
+	TPM0->MOD = FREQ_2_MOD(running_notes[i]);
+	TPM0_C2V = FREQ_2_MOD(running_notes[i]*DUTY_CYCLE);
+	osDelay(running_durations[i]);
 }
 
 void ending_sound(void) {
 	for (int i = 0; i < ENDING_CNT; i++) {
 		TPM0->MOD = FREQ_2_MOD(ending_notes[i]);
-		TPM0_C2V = (FREQ_2_MOD(ending_notes[i])) / 2;
+		TPM0_C2V = FREQ_2_MOD(ending_notes[i]*DUTY_CYCLE);
 		osDelay(ending_durations[i]*2);
 	}
     	TPM0_C2V = 0;
@@ -194,7 +193,7 @@ void ending_sound(void) {
 void opening_sound(void) {
 	for (int i = 0; i < OPENING_CNT; i++) {
 		TPM0->MOD = FREQ_2_MOD(opening_notes[i]);
-		TPM0_C2V = (FREQ_2_MOD(opening_notes[i])) / 2;
+		TPM0_C2V = FREQ_2_MOD(opening_notes[i]*DUTY_CYCLE);
 		osDelay(opening_durations[i]*2);
 	}
 }

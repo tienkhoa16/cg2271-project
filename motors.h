@@ -9,7 +9,7 @@
 
 // PWM SETTINGS
 #define FAST 100		// Used when going forward and backward
-#define SLOW 90		// Used when making turns
+#define SLOW 80		// Used when making turns
 
 // DIRECTION SETTINGS
 #define STOP			0
