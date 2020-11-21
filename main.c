@@ -48,7 +48,7 @@ int isRunning(void) {
 /*----------------------------------------------------------------------------
  * Application main thread
  *---------------------------------------------------------------------------*/
-void red_led_thread(void *argument) {    
+void tLed_red(void *argument) {    
 	osEventFlagsWait(bluetoothConnected, 0x01, osFlagsWaitAny, osWaitForever);
 	for (;;) {
         if (isRunning() == 0) {
@@ -65,7 +65,7 @@ void red_led_thread(void *argument) {
     }
 }
 
-void green_led_thread(void *argument) {
+void tLed_green(void *argument) {
     osEventFlagsWait(bluetoothConnected, 0x01, osFlagsWaitAny, osWaitForever);
     for (int i = 0; i < 3; i++) {
         on2GreenLeds();
@@ -234,8 +234,8 @@ int main (void) {
     
     osThreadNew(tBrain, NULL, NULL);
     
-    osThreadNew(green_led_thread, NULL, NULL);    // Create application main thread
-    osThreadNew(red_led_thread, NULL, NULL);    // Create application main thread
+    osThreadNew(tLed_green, NULL, NULL); 
+    osThreadNew(tLed_red, NULL, NULL); 
     
     osThreadNew(tMotor_Forward, NULL, NULL);
     osThreadNew(tMotor_Reverse, NULL, NULL);
