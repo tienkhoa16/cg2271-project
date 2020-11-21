@@ -24,14 +24,14 @@ package "Movement Threads" #orange {
 }
 
 package "Audio Threads" #aquamarine {
-    [tBrain] -up--> [tSound_opening]
-    [tBrain] -up--> [tSound_running]
     [tBrain] -up--> [tSound_ending]
+    [tBrain] -up--> [tSound_running]
+    [tBrain] -up--> [tSound_opening]
 }
 
 package "LED Threads" #greenyellow{
-    [tBrain] -u-> [green_led_thread]
-    [tBrain] -u-> [red_led_thread]
+    [tBrain] -u-> [tLed_red]
+    [tBrain] -u-> [tLed_green]
 }
 
 @enduml
