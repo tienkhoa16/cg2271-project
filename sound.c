@@ -7,7 +7,7 @@
 #define ENDING_CNT      sizeof(ending_notes)/sizeof(ending_notes[0])
 #define FREQ_2_MOD(x)   (375000/x)
 
-// Glory glory ManUtd
+// Glory Glory ManUtd
 int ending_notes[] = {
 	A3, 0, G3, FS3, A3, D4, E4, FS4, 0, D4, 0,
 	B3, 0, C4, D4, C4, D4, C4, A3, 0, FS3, 0,
@@ -145,7 +145,7 @@ int opening_durations[] = {
 	125, 125, 125, 125, 200, 150
 };
 
-/* Init PWM Module */
+/* Initializes PWM Module */
 void initSound(void) 
 {
 	// Enable Clock for port PORTB
@@ -173,12 +173,14 @@ void initSound(void)
 	TPM0_C2SC |= (TPM_CnSC_ELSB(1) | TPM_CnSC_MSB(1));
 }
 
+/* Plays audio during the challenge */
 void running_sound(int i) {
 	TPM0->MOD = FREQ_2_MOD(running_notes[i]);
 	TPM0_C2V = FREQ_2_MOD(running_notes[i]*DUTY_CYCLE);
 	osDelay(running_durations[i]);
 }
 
+/* Plays audio when robot finishes the challenge */
 void ending_sound(void) {
 	for (int i = 0; i < ENDING_CNT; i++) {
 		TPM0->MOD = FREQ_2_MOD(ending_notes[i]);
@@ -190,6 +192,7 @@ void ending_sound(void) {
 
 }
 
+/* Plays audio when bluetooth connection is established */
 void opening_sound(void) {
 	for (int i = 0; i < OPENING_CNT; i++) {
 		TPM0->MOD = FREQ_2_MOD(opening_notes[i]);
@@ -198,7 +201,9 @@ void opening_sound(void) {
 	}
 }
 
+/* Stops the audio */
 void stop_sound(void) {
+    TPM0_MOD = 100;
 	TPM0_C2V = 0;
     osDelay(100);
 }

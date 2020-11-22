@@ -6,7 +6,6 @@
  * @@author: https://www.arduino.cc/en/Tutorial/BuiltInExamples/toneMelody
  *************************************************/
 
-
 #define B0  31
 #define C1  33
 #define CS1 35
@@ -97,18 +96,14 @@
 #define D8  4699
 #define DS8 4978
 
-#define PTE_PIN29 29
-#define RUNNING_COUNT 204
-#define DUTY_CYCLE 0.65
+#define PTE_PIN29       29
+#define RUNNING_COUNT   204
+#define DUTY_CYCLE      0.65
 
 void initSound(void);
-
 void opening_sound(void);
-
 void running_sound(int i);
-
 void ending_sound(void);
-
 void stop_sound(void);
 
 #endif

@@ -1,7 +1,7 @@
 #include "MKL25Z4.h"                    // Device header
 #include "uart.h"
 
-/* Init UART2 */
+/* Initializes UART2 */
 void initUART2(void) {
     uint32_t divisor, bus_clock;
     

@@ -1,13 +1,12 @@
 #include "MKL25Z4.h"                    // Device header
 #include "ledControl.h"
 
-/** Initialize LED */
+/* Initializes LEDs */
 void initLed(void) { 
 	// Enable Clock to PORTC
 	SIM->SCGC5 |= (SIM_SCGC5_PORTC_MASK); 
 
     // Configure MUX settings to make all LED pins GPIO
-    
     PORTC->PCR[GREEN_LED_1] &= ~PORT_PCR_MUX_MASK;
     PORTC->PCR[GREEN_LED_1] |= PORT_PCR_MUX(1);
     
@@ -35,17 +34,17 @@ void initLed(void) {
     PORTC->PCR[RED_LEDS] &= ~PORT_PCR_MUX_MASK;
     PORTC->PCR[RED_LEDS] |= PORT_PCR_MUX(1);
     
-    
     // Set Data Direction Registers for PortC
     PTC->PDDR |= (ALL_GREEN_LEDS_MASK | MASK(RED_LEDS));
 }
 
-/** Turn off all LEDs */
+/* Turns off all LEDs */
 void offAllLeds(void) {
     PTC->PCOR = ALL_GREEN_LEDS_MASK;    // Off 8 green leds
     PTC->PCOR = MASK(RED_LEDS);         // Off 8 red leds
 }
 
+/* Turns on or off a specific LED */
 void ledControl(uint32_t color, uint32_t status) {
     switch (color) {
         case GREEN_LED_1:
@@ -117,16 +116,18 @@ void ledControl(uint32_t color, uint32_t status) {
     }
 }
 
+/* Turns off all green LEDs */
 void offAllGreenLeds(void) {
     PTC->PCOR = ALL_GREEN_LEDS_MASK;
 }
 
-/** Turn on 2 green LEDs when bluetooth is connected */
+/* Turns on 2 green LEDs when bluetooth is connected */
 void on2GreenLeds(void) {
     offAllGreenLeds();
     PTC->PSOR = (MASK(GREEN_LED_4) | MASK(GREEN_LED_5));    
 }
 
+/* Turns on all green LEDs */
 void onAllGreenLeds(void) {
     PTC->PSOR = ALL_GREEN_LEDS_MASK;
 }

@@ -1,8 +1,8 @@
 #include "MKL25Z4.h"                    // Device header
 #include "motors.h"
 
+/* Initializes motors */
 void initMotors(void) {
-
 	// Enable Clock for PORTD
 	SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;
 	
@@ -60,10 +60,12 @@ void initMotors(void) {
     TPM2_C1SC |= (TPM_CnSC_MSB(1) | TPM_CnSC_ELSB(1));
 }
 
+/* Returns PWM value from duty cycle */
 int getPWM(int duty_cycle){
 	return ((float) duty_cycle / 100) * (7500+1);
 }
 
+/* Executes move based on direction settings */
 void move(int dir) {
 	if (dir == FORWARD) {
 		TPM1_C0V = getPWM(FAST);   	// Right forward
@@ -76,16 +78,16 @@ void move(int dir) {
 		TPM2_C0V = 0;				// Left reverse
 		TPM2_C1V = getPWM(FAST);
 	} else if (dir == LEFT) {		// Left turn
-		TPM1_C0V = getPWM(FAST);	
+		TPM1_C0V = getPWM(FAST);	// Right forward
 		TPM1_C1V = 0;
-		TPM2_C0V = 0;
+		TPM2_C0V = 0;               // Left reverse
 		TPM2_C1V = getPWM(SLOW);
 	} else if (dir == RIGHT) {		// Right turn
-		TPM1_C0V = 0;
+		TPM1_C0V = 0;               // Right reverse
 		TPM1_C1V = getPWM(SLOW);
-		TPM2_C0V = getPWM(FAST);
+		TPM2_C0V = getPWM(FAST);    // Left forward
 		TPM2_C1V = 0;
-	} else {								// STOP
+	} else {						// STOP
 		TPM1_C0V = 0;
 		TPM1_C1V = 0;
 		TPM2_C0V = 0;

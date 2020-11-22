@@ -1,7 +1,7 @@
 #ifndef MOTORS_H_
 #define MOTORS_H_
 
-// MOTOR PINS OUT 
+// MOTOR PINS OUT
 #define RIGHT_MOTOR_FORWARD 0                      // Port B pin 0, TPM1_CH0,  
 #define RIGHT_MOTOR_REVERSE 1                      // Port B pin 1, TPM1_CH1,
 #define LEFT_MOTOR_FORWARD  2                      // Port B pin 2, TPM2_CH0,
@@ -9,7 +9,7 @@
 
 // PWM SETTINGS
 #define FAST 100		// Used when going forward and backward
-#define SLOW 100		// Used when making turns
+#define SLOW 80 		// Used when making turns
 
 // DIRECTION SETTINGS
 #define STOP			0
@@ -19,9 +19,7 @@
 #define RIGHT			4
 
 void initMotors(void);
-
 int getPWM(int);
-
 void move(int);
 
 #endif
